@@ -18,13 +18,6 @@ end)
 -- variable --
 local tag = GetCurrentResourceName()..":"
 local isDead = false
-Client = {}
-local state = {
-	ui = false,
-	cam = nil,
-	isCameraActive = false,
-}
-
 -- 
 
 regEvent = function(name, handler)
@@ -105,7 +98,62 @@ end)
 -- End Event --
 
 -- Function --
-Client.checkMyJob = function(job)
+local state = {
+	ui = false,
+	cam = nil,
+	isCameraActive = false,
+	
+	SetCam = function(self,idx)
+		local shop = Vehicle.ListShop[idx]
+		local target = nil
+		if not DoesCamExist(self.cam) then
+			self.cam = CreateCam("DEFAULT_SCRIPTED_CAMERA", true)
+			target = vector3(shop.coords.x, shop.coords.y, shop.coords.z) - vector3(0, 0, 1.0)
+		end
+		if target == nil then
+			target = vector3(shop.coords.x, shop.coords.y, shop.coords.z) - vector3(0, 0, 1.0)
+		end
+		SetCamActive(self.cam, true)
+		RenderScriptCams(true, true, 500, true, true)
+		self.isCameraActive = true
+		SetCamRot(self.cam, 0.0, 0.0, 270.0, true)
+		SetCamCoord(self.cam, shop.showCoords.x, shop.showCoords.y, shop.showCoords.z)
+		PointCamAtCoord(self.cam, target.x, target.y, target.z)
+		SetEntityVisible(PlayerPedId(), 0)	
+		SetEntityHeading(PlayerPedId(), 90.0)
+	end,
+	
+	detoryCam = function(self)
+		self.isCameraActive = false
+		SetCamActive(self.cam, false)
+		RenderScriptCams(false, true, 500, true, true)
+		self.cam = nil
+		ResetEntityAlpha(PlayerPedId())
+	end,
+	
+	SendDataToNui = function(self,idx)
+		local shop = Vehicle.ListShop[idx]
+		self.ui = true
+		SendNUIMessage({ 
+			action = "openCardealer", 
+			vehicles = shop.vehicles,
+			shopName = shop.shopName,
+			SvName = Default.SvName,
+			ImageCarPath = Default.ImageCarPath
+		})
+		SetNuiFocus(self.ui, self.ui)
+	end,
+	
+	resetPlayerEntity = function(self)
+		self.ui = false
+		-- SetEntityCoords(PlayerPedId(),  GetEntityCoords(PlayerPedId()))
+		SetEntityVisible(PlayerPedId(), 1)
+		SetNuiFocus(self.ui, self.ui)
+		DisplayRadar(1)
+	end
+}
+
+checkMyJob = function(job)
 	if #job < 1 then return true end
 	for i=1,#job do
 		if job[i] == ESX.PlayerData.job.name then
@@ -115,56 +163,7 @@ Client.checkMyJob = function(job)
 	return false
 end
 
-Client.SetCam = function(idx)
-	local shop = Vehicle.ListShop[idx]
-	local target = nil
-	if not DoesCamExist(state.cam) then
-		state.cam = CreateCam("DEFAULT_SCRIPTED_CAMERA", true)
-		target = vector3(shop.coords.x, shop.coords.y, shop.coords.z) - vector3(0, 0, 1.0)
-	end
-	if target == nil then
-		target = vector3(shop.coords.x, shop.coords.y, shop.coords.z) - vector3(0, 0, 1.0)
-	end
-	SetCamActive(state.cam, true)
-	RenderScriptCams(true, true, 500, true, true)
-	state.isCameraActive = true
-	SetCamRot(state.cam, 0.0, 0.0, 270.0, true)
-	SetCamCoord(state.cam, shop.showCoords.x, shop.showCoords.y, shop.showCoords.z)
-	PointCamAtCoord(state.cam, target.x, target.y, target.z)
-	SetEntityVisible(PlayerPedId(), 0)	
-	SetEntityHeading(PlayerPedId(), 90.0)
-end
-
-Client.detoryCam = function()
-	state.isCameraActive = false
-	SetCamActive(state.cam, false)
-	RenderScriptCams(false, true, 500, true, true)
-	state.cam = nil
-	ResetEntityAlpha(PlayerPedId())
-end
-
-Client.SendDataToNui = function(idx)
-	local shop = Vehicle.ListShop[idx]
-	state.ui = true
-	SendNUIMessage({ 
-		action = "openCardealer", 
-		vehicles = shop.vehicles,
-		shopName = shop.shopName,
-		SvName = Default.SvName,
-		ImageCarPath = Default.ImageCarPath
-	})
-	SetNuiFocus(state.ui, state.ui)
-end
-
-Client.resetPlayerEntity = function()
-	state.ui = false
-	-- SetEntityCoords(PlayerPedId(),  GetEntityCoords(PlayerPedId()))
-	SetEntityVisible(PlayerPedId(), 1)
-	SetNuiFocus(state.ui, state.ui)
-	DisplayRadar(1)
-end
-
-Client.Draw3DText = function(label,coords,myCoords)
+Draw3DText = function(label,coords,myCoords)
 	RegisterFontFile(Setting.fontName)
 	local fontId  = RegisterFontId(Setting.fontName) or 1
 	local px, py, pz = table.unpack(GetGameplayCamCoord())
@@ -188,12 +187,13 @@ Client.Draw3DText = function(label,coords,myCoords)
 	ClearDrawOrigin()
 end
 
+
 -- End Function --
 
 -- NUI Callback --
 RegisterNUICallback("CloseShop", function(data, cb)
-	Client.detoryCam()
-	Client.resetPlayerEntity()
+	state:detoryCam()
+	state:resetPlayerEntity()
 	cb("ok")
 end)
 
@@ -211,13 +211,13 @@ ThreadActive = function()
 			local myDistanceCoord = #(playerCoords - coords)
 			if myDistanceCoord <= v.DrawText3D.distance and v.DrawText3D.enable and not state.ui then
 				sleep = 0
-				Client.Draw3DText(v.shopName, coords, playerCoords)
+				Draw3DText(v.shopName, coords, playerCoords)
 			end
 			if myDistanceCoord <= 1.5 and not state.ui then
 				sleep = 0
-				if IsControlJustPressed(0, Default.keybind.openShop) and Client.checkMyJob(v.requireJob)then
-					Client.SetCam(k)
-					Client.SendDataToNui(k)
+				if IsControlJustPressed(0, Default.keybind.openShop) and checkMyJob(v.requireJob)then
+					state:SetCam(k)
+					state:SendDataToNui(k)
 				else
 					ESX.ShowNotification("คุณไม่มีสิทธิ์เข้าใช้งานร้าน")
 				end
