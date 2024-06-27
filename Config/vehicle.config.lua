@@ -121,39 +121,18 @@ Vehicle.ListShop = {
             distance = 5
         },
         coords = vector4(-59.17, -1097.25, 26.42, 34.45),
-        showCoords = vector3(403.01068115234, -962.32613525391, -97.504096984863),
-        camRot = vector3(215.5, 180.00, 12.00),
+        showCoords = vector3(-372.16, -2437.18, 1),
         requireJob = {
             'police',
         },
         vehicles = {
-            ['Sports'] = {
+            ['Boat'] = {
                 {
-                    model = 'comet5', --@comment ชื่อโมเดลรถ
-                    label = 'Comet5', --@comment ชื่อรถที่จะโชว์
+                    model = 'suntrap', --@comment ชื่อโมเดลรถ
+                    label = 'suntrap', --@comment ชื่อรถที่จะโชว์
                     price = 400000, --@comment ราคาขาย
                     stock = 10, --@comment จำนวนรถที่มีในสต๊อก ถ้าเป็น -1 จะเป็นไม่จำกัด
-                },
-                {
-                    model = 'sultan2', --@comment ชื่อโมเดลรถ
-                    label = 'sultan2', --@comment ชื่อรถที่จะโชว์
-                    price = 330000, --@comment ราคาขาย
-                    stock = -1, --@comment จำนวนรถที่มีในสต๊อก ถ้าเป็น -1 จะเป็นไม่จำกัด
-                },
-            },
-            ['SUV'] = {
-                {
-                    model = 'baller6', --@comment ชื่อโมเดลรถ
-                    label = 'Baller6', --@comment ชื่อรถที่จะโชว์
-                    price = 400000, --@comment ราคาขาย
-                    stock = 10, --@comment จำนวนรถที่มีในสต๊อก ถ้าเป็น -1 จะเป็นไม่จำกัด
-                },
-                {
-                    model = 'huntley', --@comment ชื่อโมเดลรถ
-                    label = 'Huntley', --@comment ชื่อรถที่จะโชว์
-                    price = 330000, --@comment ราคาขาย
-                    stock = -1, --@comment จำนวนรถที่มีในสต๊อก ถ้าเป็น -1 จะเป็นไม่จำกัด
-                },
+                }
             },
         }
     },

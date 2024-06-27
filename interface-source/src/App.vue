@@ -18,12 +18,12 @@
         <span class="title-color">Custom Color</span>
         <div class="box-primary-color">
           <span class="text-color">สีหลัก</span>
-          <input type="color">
+          <input type="color" @input="setVehicleColor('primary',$event.target.value)">
           <button class="resetColor">คืนค่าสีเดิม</button>
         </div>
         <div class="box-secondary-color">
           <span class="text-color">สีรอง</span>
-          <input type="color">
+          <input type="color" @input="setVehicleColor('secondary',$event.target.value)">
           <button class="resetColor">คืนค่าสีเดิม</button>
         </div>
       </div>
@@ -46,7 +46,7 @@
             </div>
               <div class="box-Information-detail">
                 <span class="span-1">Stock</span>
-                <span>{{selectedVehicle.stock}}</span>
+                <span>{{selectedVehicle.stock == -1 ? 'Unlimited' : selectedVehicle.stock}}</span>
               </div>
           </div>
         </div>
@@ -140,7 +140,7 @@
                 <span class="price">{{ model.price }}</span>
               </span>
               <span class="stock">
-                Stock : {{ model.stock }}
+                Stock : {{ model.stock == -1 ? 'Unlimited' : model.stock}}
               </span>
             </div>
           </button>
@@ -238,6 +238,9 @@ export default {
                     }
                     this.selectVehicle(this.vehiclesAll[0])
                   }
+                  if (data.action == 'isDead') {
+                    this.CloseShop();
+                  }
                 }
             });
         },
@@ -247,7 +250,7 @@ export default {
                     this.CloseShop();
                 }
               if (event.key == 'a') {
-                  fetch(`https://${GetParentResourceName()}/carRotationLeft`, {
+                  fetch(`https://${GetParentResourceName()}/setVehicleRotationLeft`, {
                   method: "POST",
                   headers: {
                     "Content-Type": "application/json",
@@ -256,7 +259,7 @@ export default {
                   });
                 }
                 else if (event.key == 'd') {
-                  fetch(`https://${GetParentResourceName()}/carRotationRight`, {
+                  fetch(`https://${GetParentResourceName()}/setVehicleRotationRight`, {
                   method: "POST",
                   headers: {
                     "Content-Type": "application/json",
@@ -293,7 +296,37 @@ export default {
             },
             body: JSON.stringify(this.selectedVehicle),
           });
+        },
+        hexToRgb(hex){
+          let nexHex = hex.split('#')[1];
+          var bigint = parseInt(nexHex, 16);
+          var r = (bigint >> 16) & 255;
+          var g = (bigint >> 8) & 255;
+          var b = bigint & 255;
           
+          return {
+            r: r,
+            g: g,
+            b: b
+          }
+
+        },
+        async setVehicleColor(type ,value) {
+          let color = this.hexToRgb(value);
+          await fetch(`https://${GetParentResourceName()}/setVehicleColor`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify( 
+              {
+                type: type,
+                r: color.r,
+                g: color.g,
+                b: color.b
+              }
+            ),
+          });
         }
   },
   computed:{

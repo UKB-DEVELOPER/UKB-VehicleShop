@@ -92,6 +92,9 @@ end)
 
 regEventESX(Default.event.onDeath, function()
     isDead = true
+	SendNUIMessage({
+		action = "isDead"
+	})
 end)
 
 regEventESX(Default.event.playerSpawned, function()
@@ -116,17 +119,13 @@ local state = {
         local target = nil
         if not DoesCamExist(self.cam) then
             self.cam = CreateCam("DEFAULT_SCRIPTED_CAMERA", true)
-            target = vector3(shop.coords.x, shop.coords.y, shop.coords.z) - vector3(0, 0, 1.0)
-        end
-        if target == nil then
-            target = vector3(shop.coords.x, shop.coords.y, shop.coords.z) - vector3(0, 0, 1.0)
         end
         SetCamActive(self.cam, true)
         RenderScriptCams(true, true, 500, true, true)
         self.isCameraActive = true
         SetCamRot(self.cam, 0.0, 0.0, 270.0, true)
-        SetCamCoord(self.cam, shop.showCoords + vector3(0.7, 0.0, 0.7))
-        PointCamAtCoord(self.cam, target)
+        SetCamCoord(self.cam, self.showCoordsVehicle + vector3(0.7, 0.0, 0.7))
+        PointCamAtCoord(self.cam, self.showCoordsVehicle + vector3(-2.0, -0.5, 0.6))
         SetEntityVisible(PlayerPedId(), 0)
         SetEntityHeading(PlayerPedId(), 90.0)
         self.lastCoords = GetEntityCoords(PlayerPedId())
@@ -216,7 +215,17 @@ local state = {
 
 		self.vehicle = vehicle
 
-    end
+    end,
+
+	setVehicleColor = function(self, data)
+		if self.vehicle and DoesEntityExist(self.vehicle) then
+			if data.type == 'primary' then
+				SetVehicleCustomPrimaryColour(self.vehicle, data.r, data.g, data.b)
+			elseif data.type == 'secondary' then
+				SetVehicleCustomSecondaryColour(self.vehicle, data.r, data.g, data.b)
+			end
+		end
+	end
 }
 
 
@@ -283,17 +292,28 @@ RegisterNUICallback("showVehicle", function(data, cb)
     cb("ok")
 end)
 
-RegisterNUICallback("carRotationRight", function(data)
+RegisterNUICallback("setVehicleRotationRight", function(data, cb)
 	if state.vehicle and DoesEntityExist(state.vehicle) then
         SetEntityRotation(state.vehicle, GetEntityRotation(state.vehicle) + vector3(0,0,5), false, false, 2, false)
     end
+	cb(true)
 end)
 
-RegisterNUICallback("carRotationLeft", function(data)
+RegisterNUICallback("setVehicleRotationLeft", function(data, cb)
 	if state.vehicle and DoesEntityExist(state.vehicle) then
         SetEntityRotation(state.vehicle, GetEntityRotation(state.vehicle) - vector3(0,0,5), false, false, 2, false)
     end
+	cb(true)
 end)
+
+RegisterNUICallback("setVehicleColor", function(data, cb)
+	if state.vehicle and DoesEntityExist(state.vehicle) then
+		state:setVehicleColor(data)
+	end
+	cb(true)
+end)
+
+
 
 -- End NUI Callback --
 
@@ -312,7 +332,7 @@ ThreadActive = function()
             end
             if myDistanceCoord <= 1.5 and not state.ui then
                 sleep = 0
-                if IsControlJustPressed(0, Default.keybind.openShop) and checkMyJob(v.requireJob) then
+                if IsControlJustPressed(0, Default.keybind.openShop) and checkMyJob(v.requireJob) and not isDead then
                     state:SetCam(k)
                     state:SendDataToNui(k)
                 else
