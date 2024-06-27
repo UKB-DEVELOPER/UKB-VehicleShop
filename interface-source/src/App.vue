@@ -2,7 +2,7 @@
   <div class="container" v-show="main?.ui">
 
     <!-- Left -->
-    <div class="tap-left">
+    <div class="tap-left" v-if="selectedVehicle">
 
       <div class="box-title">
         <span class="titleShop">{{ titleShop }}</span>
@@ -10,7 +10,7 @@
       </div>
 
       <div class="box-vehicleName">
-        <span class="vehicleName">T20</span>
+        <span class="vehicleName">{{selectedVehicle.label}}</span>
         <span class="vehicleType">Type : Super</span>
       </div>
 
@@ -37,7 +37,7 @@
             </div>
               <div class="box-Information-detail">
                 <span class="span-1">Price</span>
-                <span>2,200,000</span>
+                <span>{{selectedVehicle.price}}</span>
               </div>
           </div>
           <div class="box-secon-info">
@@ -46,7 +46,7 @@
             </div>
               <div class="box-Information-detail">
                 <span class="span-1">Stock</span>
-                <span>10</span>
+                <span>{{selectedVehicle.stock}}</span>
               </div>
           </div>
         </div>
@@ -129,7 +129,7 @@
 
       <div class="box-list-car">
         <div class="list-car">
-          <button class="box-car" v-for="(model,idx) in Vehicles" :key="idx">
+          <button class="box-car" v-for="(model,idx) in Vehicles" :key="idx" @click='selectVehicle(model)'>
             <span class="car-name">{{ model.label }}</span>
             <div class="box-car-img">
               <img :src="'/assets/car/' + model.model + '.png'" :alt="model.model">
@@ -213,7 +213,8 @@ export default {
         'All',
       ],
       vehiclesAll: [],
-      vehicles: null
+      vehicles: null,
+      selectedVehicle: null,
     }
   },
   methods: {
@@ -235,14 +236,33 @@ export default {
                         this.vehiclesAll.push(value2)
                       }
                     }
+                    this.selectVehicle(this.vehiclesAll[0])
                   }
                 }
             });
         },
         KeyDown() {
             window.addEventListener('keydown', (event) => {
-                if (event.key == 'Escape') {
+              if (event.key == 'Escape') {
                     this.CloseShop();
+                }
+              if (event.key == 'a') {
+                  fetch(`https://${GetParentResourceName()}/carRotationLeft`, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({}),
+                  });
+                }
+                else if (event.key == 'd') {
+                  fetch(`https://${GetParentResourceName()}/carRotationRight`, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({}),
+                  });
                 }
             });
         },
@@ -264,6 +284,17 @@ export default {
             body: JSON.stringify({}),
           });
         },
+        async selectVehicle(data){
+          this.selectedVehicle = data;
+          await fetch(`https://${GetParentResourceName()}/showVehicle`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(this.selectedVehicle),
+          });
+          
+        }
   },
   computed:{
     Vehicles() {

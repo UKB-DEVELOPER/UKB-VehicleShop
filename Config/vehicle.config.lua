@@ -56,8 +56,8 @@ Vehicle.ListShop = {
         vehicles = {
             ['Sports'] = {
                 {
-                    model = 'comet5', --@comment ชื่อโมเดลรถ
-                    label = 'Comet5', --@comment ชื่อรถที่จะโชว์
+                    model = 't20', --@comment ชื่อโมเดลรถ
+                    label = 't20', --@comment ชื่อรถที่จะโชว์
                     price = 400000, --@comment ราคาขาย
                     stock = 10, --@comment จำนวนรถที่มีในสต๊อก ถ้าเป็น -1 จะเป็นไม่จำกัด
 
