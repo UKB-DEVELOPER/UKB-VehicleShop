@@ -1,3 +1,3 @@
 ESX = nil
-TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
+TriggerEvent(Base.ServerEvent, function(obj) ESX = obj end)
 local ResourceName = GetCurrentResourceName()
