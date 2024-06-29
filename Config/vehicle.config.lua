@@ -119,15 +119,15 @@ Vehicle.ListShop = {
             enable = true,
             distance = 5
         },
-        coords = vector4(-59.17, -1097.25, 26.42, 34.45),
+        coords = vector4(-357.11, -2427.12,2.65,238.96),
         showCoords = vector3(-372.16, -2437.18, 1),
         requireJob = {
             'police',
         },
         testDrive = {
             enable = true,
-            time = 45,
-            spawncoord = vector3(-80.9,-1102.13,26.17),
+            time = 20,
+            spawncoord = vector3(-372.16, -2437.18, 1),
             range = 1200
         },
         vehicles = {

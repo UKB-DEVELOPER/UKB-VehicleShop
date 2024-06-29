@@ -39,12 +39,21 @@ SetRouting = function(source, miti , cb)
     cb(true)
 end
 
+regEvent("SetRouting", function(miti)
+    local _source = source
+    SetRouting(_source, miti , function(res)
+        if res then
+            print('^2 UKB-VehicleShop: ReloadScript Success')
+        end
+    end)
+end)
+
 RegisterCommand('setmiti', function(source, args)
     local _source = source
     local miti = tonumber(args[1])
     SetRouting(_source, miti , function(res)
         if res then
-            print("SetRouting Success")
+            print("Set Routing Success")
         end
     end)
 end)

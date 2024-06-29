@@ -129,6 +129,7 @@ local state = {
     vehicle = nil,
     showCoordsVehicle = nil,
     testDrive = nil,
+    VehicleTestDrive = nil,
 
     SetCam = function(self, idx)
         local shop = Vehicle.ListShop[idx]
@@ -173,7 +174,9 @@ local state = {
 
     resetPlayerEntity = function(self)
         self.ui = false
-        SetEntityCoords(PlayerPedId(), self.lastCoords)
+        if self.lastCoords then
+            SetEntityCoords(PlayerPedId(), self.lastCoords)
+        end
         SetEntityVisible(PlayerPedId(), 1)
         SetNuiFocus(self.ui, self.ui)
         DisplayRadar(1)
@@ -189,8 +192,19 @@ local state = {
         end
     end,
 
+    deleteLastCartestDrive = function(self)
+        if self.VehicleTestDrive == nil then
+            return
+        end
+        if DoesEntityExist(self.VehicleTestDrive) then
+            DeleteEntity(self.VehicleTestDrive)
+            self.VehicleTestDrive = nil
+        end
+    end,
+
     showVehicle = function(self, cb)
         self:deleteLastCar()
+        self:deleteLastCartestDrive()
 
         local model = (type(self.vehicleUI.model) == 'number' and self.vehicleUI.model or
                           GetHashKey(self.vehicleUI.model))
@@ -256,14 +270,14 @@ local state = {
                     return
                 end
 
-                local vehicle = self.vehicle
+                self.VehicleTestDrive = self.vehicle
 
                 SetNuiFocus(0, 0)
                 SetEntityVisible(PlayerPedId(), 1)
                 self:detoryCam()
-                FreezeEntityPosition(vehicle, false)
-                SetVehicleUndriveable(vehicle, false)
-                SetPedIntoVehicle(PlayerPedId(), vehicle, -1)
+                FreezeEntityPosition(self.VehicleTestDrive, false)
+                SetVehicleUndriveable(self.VehicleTestDrive, false)
+                SetPedIntoVehicle(PlayerPedId(), self.VehicleTestDrive, -1)
                 SetPedCoordsKeepVehicle(PlayerPedId(), self.testDrive.spawncoord)
                 SendNUIMessage({
                     action = "StartTestDrive"
@@ -272,14 +286,17 @@ local state = {
                 Citizen.CreateThread(function()
                     local sec = 0
                     local timeout = GetGameTimer() / 1000
-                    while GetGameTimer() / 1000 - timeout < self.testDrive.time and DoesEntityExist(vehicle) and
+                    if not self.testDrive.time then
+                        return
+                    end
+                    while GetGameTimer() / 1000 - timeout < self.testDrive.time and DoesEntityExist(self.VehicleTestDrive) and
                         not IsEntityDead(PlayerPedId()) do
                         sec = math.floor(self.testDrive.time - (GetGameTimer() / 1000 - timeout))
                         if #(GetEntityCoords(PlayerPedId()) - self.testDrive.spawncoord) > self.testDrive.range then
                             SetPedCoordsKeepVehicle(PlayerPedId(), self.testDrive.spawncoord)
                         end
-                        if GetVehiclePedIsIn(PlayerPedId(), false) == 0 and DoesEntityExist(vehicle) then
-                            SetPedIntoVehicle(PlayerPedId(), vehicle, -1)
+                        if GetVehiclePedIsIn(PlayerPedId(), false) == 0 and DoesEntityExist(self.VehicleTestDrive) then
+                            SetPedIntoVehicle(PlayerPedId(), self.VehicleTestDrive, -1)
                         end
                         SendNUIMessage({
                             action = "updateTimerTestDrive",
@@ -289,12 +306,12 @@ local state = {
                     end
 
                     SetPedCoordsKeepVehicle(PlayerPedId(), self.lastCoords)
-                    FreezeEntityPosition(vehicle, true)
-                    SetVehicleUndriveable(vehicle, true)
+                    FreezeEntityPosition(self.VehicleTestDrive, true)
+                    SetVehicleUndriveable(self.VehicleTestDrive, true)
                     ClearPedTasksImmediately(PlayerPedId())
-                    if DoesEntityExist(vehicle) then
-                        DeleteEntity(vehicle)
-                        vehicle = nil
+                    if DoesEntityExist(self.VehicleTestDrive) then
+                        DeleteEntity(self.VehicleTestDrive)
+                        self.VehicleTestDrive = nil
                     end
                     Call.Connect("SetRouting", function(result)
                         if result then
@@ -363,6 +380,7 @@ RegisterNUICallback("CloseShop", function(data, cb)
     state:detoryCam()
     state:resetPlayerEntity()
     state:deleteLastCar()
+    state:deleteLastCartestDrive()
     state.showCoordsVehicle = nil
     state.testDrive = nil
     cb("ok")
@@ -444,11 +462,11 @@ AddEventHandler("onResourceStop", function(resource)
     if resource ~= GetCurrentResourceName() then
         return
     end
-    if state.ui then
-        state:detoryCam()
-        state:resetPlayerEntity()
-        state:deleteLastCar()
-    end
+    state:detoryCam()
+    state:resetPlayerEntity()
+    state:deleteLastCar()
+    state:deleteLastCartestDrive()
+    TriggerServerEvent(tag..'SetRouting', 0)
 
     for _, v in pairs(vehshop) do
         if DoesEntityExist(vehshop.npc) then
