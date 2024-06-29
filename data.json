@@ -1,10 +1,11 @@
 {
-  "SUV": [
-    { "model": "baller6", "label": "Baller6", "price": 400000, "stock": 10 },
-    { "model": "huntley", "label": "Huntley", "price": 330000, "stock": -1 }
-  ],
-  "Sports": [
-    { "model": "comet5", "label": "Comet5", "price": 400000, "stock": 10 },
-    { "model": "sultan2", "label": "sultan2", "price": 330000, "stock": -1 }
-  ]
+  "enable": true,
+  "range": 1200,
+  "time": 45,
+  "spawncoord": {
+    "x": -80.9000015258789,
+    "y": -1102.1300048828126,
+    "z": 26.17000007629394,
+    "w": 250.30999755859376
+  }
 }

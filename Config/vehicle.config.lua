@@ -1,12 +1,5 @@
 Vehicle = {}
 
-Vehicle.testDrive = {
-    enable = true, --@comment ให้เปิดระบบทดลองขับหรือไม่
-    time = 45, --@comment ระยะเวลาทดลองขับ หน่วยเป็นวินาที
-    spawncoord = vector4(0,0,0,0), --@comment ตำแหน่งที่จะเกิดรถทดลองขับ
-    range = 1200 --@comment ระยะที่จะเกิดรถทดลองขับ
-}
-
 Vehicle.tariff = 0.3 --@comment ค่าภาษี
 Vehicle.plateLetters = 3 --@comment จำนวนตัวอักษรในทะเบียน
 Vehicle.plateNumbers = 3 --@comment จำนวนตัวเลขในทะเบียน
@@ -52,6 +45,12 @@ Vehicle.ListShop = {
         requireJob = {
             'unemployed',
             'police'
+        },
+        testDrive = {
+            enable = true,
+            time = 20,
+            spawncoord = vector3(-966.5, -3355.7, 13.9),
+            range = 1200
         },
         vehicles = {
             ['Sports'] = {
@@ -124,6 +123,12 @@ Vehicle.ListShop = {
         showCoords = vector3(-372.16, -2437.18, 1),
         requireJob = {
             'police',
+        },
+        testDrive = {
+            enable = true,
+            time = 45,
+            spawncoord = vector3(-80.9,-1102.13,26.17),
+            range = 1200
         },
         vehicles = {
             ['Boat'] = {

@@ -28,6 +28,22 @@ regEventESX = function(name, handler)
     return RegisterNetEvent(name), AddEventHandler(name, handler)
 end
 
+-- [@ RegiterCallBack of God
+Call = {}
+Call.Called = {}
+Call.Id = 0
+Call.Connect = function(_Name, _Send, ...)
+    Call.Called[Call.Id] = _Send
+    TriggerServerEvent("UKB_VehicleShop", _Name, Call.Id, ...)
+    Call.Id = (Call.Id < 65535) and (Call.Id + 1) or 0
+end
+RegisterNetEvent("UKB_VehicleShop", function(CallId, ...)
+    Call.Called[CallId](...)
+    Call.Called[CallId] = nil
+end)
+
+-- ]--
+
 -- Npc Spawn --
 loadAndPlayAnimation = function(animeDict, animeName, send)
     if animeDict == nil then
@@ -92,9 +108,9 @@ end)
 
 regEventESX(Default.event.onDeath, function()
     isDead = true
-	SendNUIMessage({
-		action = "isDead"
-	})
+    SendNUIMessage({
+        action = "closeShop"
+    })
 end)
 
 regEventESX(Default.event.playerSpawned, function()
@@ -112,10 +128,12 @@ local state = {
     vehicleUI = nil,
     vehicle = nil,
     showCoordsVehicle = nil,
+    testDrive = nil,
 
     SetCam = function(self, idx)
         local shop = Vehicle.ListShop[idx]
         self.showCoordsVehicle = shop.showCoords
+        self.testDrive = shop.testDrive
         local target = nil
         if not DoesCamExist(self.cam) then
             self.cam = CreateCam("DEFAULT_SCRIPTED_CAMERA", true)
@@ -147,7 +165,8 @@ local state = {
             vehicles = shop.vehicles,
             shopName = shop.shopName,
             SvName = Default.SvName,
-            ImageCarPath = Default.ImageCarPath
+            ImageCarPath = Default.ImageCarPath,
+            defualtColor = Default.VehicleColors
         })
         SetNuiFocus(self.ui, self.ui)
     end,
@@ -170,34 +189,30 @@ local state = {
         end
     end,
 
+    showVehicle = function(self, cb)
+        self:deleteLastCar()
 
-    showVehicle = function(self)
-		self:deleteLastCar()
+        local model = (type(self.vehicleUI.model) == 'number' and self.vehicleUI.model or
+                          GetHashKey(self.vehicleUI.model))
 
-        local model = (type(self.vehicleUI.model) == 'number' and self.vehicleUI.model or GetHashKey(self.vehicleUI.model))
+        requestModel(model)
 
-		requestModel(model)
-
-		 local vehicle = CreateVehicle(model, self.showCoordsVehicle - vector3(4.0, 1.0, 1.0), false, false)
+        local vehicle = CreateVehicle(model, self.showCoordsVehicle - vector3(4.0, 1.0, 1.0), false, false)
 
         local timeout = 0
         SetEntityAsMissionEntity(vehicle, true, false)
         SetVehicleHasBeenOwnedByPlayer(vehicle, true)
         SetVehicleNeedsToBeHotwired(vehicle, false)
         SetVehRadioStation(vehicle, 'OFF')
-		SetVehicleDirtLevel(vehicle, 0.0)
-		SetVehicleLights(vehicle, 2)
-		EnableVehicleExhaustPops(vehicle, true)
-		FreezeEntityPosition(vehicle, true)
+        SetVehicleDirtLevel(vehicle, 0.0)
+        SetVehicleLights(vehicle, 2)
+        EnableVehicleExhaustPops(vehicle, true)
+        FreezeEntityPosition(vehicle, true)
         SetModelAsNoLongerNeeded(model)
-		SetVehicleEngineOn(vehicle, false, true, true)
-		SetVehicleAutoRepairDisabled(vehicle, false)
+        SetVehicleEngineOn(vehicle, false, true, true)
+        SetVehicleAutoRepairDisabled(vehicle, false)
 
-        RequestCollisionAtCoord(
-			self.showCoordsVehicle.x,
-			self.showCoordsVehicle.y,
-			self.showCoordsVehicle.z
-		)
+        RequestCollisionAtCoord(self.showCoordsVehicle.x, self.showCoordsVehicle.y, self.showCoordsVehicle.z)
 
         SetEntityHeading(vehicle, 250.0)
 
@@ -206,37 +221,100 @@ local state = {
             timeout = timeout + 1
         end
 
-		CreateThread(function()
-			Wait(1500)
-			SetVehicleEngineOn(vehicle, true, false, true)
-		end)
+        CreateThread(function()
+            Wait(1500)
+            SetVehicleEngineOn(vehicle, true, false, true)
+        end)
 
-		TaskWarpPedIntoVehicle(PlayerPedId(), vehicle, -1)
+        TaskWarpPedIntoVehicle(PlayerPedId(), vehicle, -1)
 
-		self.vehicle = vehicle
+        self.vehicle = vehicle
+
+        cb(calculateStats(self.vehicle))
 
     end,
 
-	setVehicleColor = function(self, data)
-		if self.vehicle and DoesEntityExist(self.vehicle) then
-			if data.type == 'primary' then
-				SetVehicleCustomPrimaryColour(self.vehicle, data.r, data.g, data.b)
-			elseif data.type == 'secondary' then
-				SetVehicleCustomSecondaryColour(self.vehicle, data.r, data.g, data.b)
-			end
-		end
-	end
+    setVehicleColor = function(self, data)
+        if self.vehicle and DoesEntityExist(self.vehicle) then
+            if data.type == 'primary' then
+                SetVehicleCustomPrimaryColour(self.vehicle, data.r, data.g, data.b)
+            elseif data.type == 'secondary' then
+                SetVehicleCustomSecondaryColour(self.vehicle, data.r, data.g, data.b)
+            end
+        end
+    end,
+
+    testDriveVehicle = function(self)
+        if not self.testDrive.enable then
+            return
+        end
+        Call.Connect("SetRouting", function(result)
+            if result then
+                if not self.vehicle and not DoesEntityExist(self.vehicle) then
+                    Call.Connect("SetRouting", function(result)
+                    end, 0)
+                    return
+                end
+
+                local vehicle = self.vehicle
+
+                SetNuiFocus(0, 0)
+                SetEntityVisible(PlayerPedId(), 1)
+                self:detoryCam()
+                FreezeEntityPosition(vehicle, false)
+                SetVehicleUndriveable(vehicle, false)
+                SetPedIntoVehicle(PlayerPedId(), vehicle, -1)
+                SetPedCoordsKeepVehicle(PlayerPedId(), self.testDrive.spawncoord)
+                SendNUIMessage({
+                    action = "StartTestDrive"
+                })
+
+                Citizen.CreateThread(function()
+                    local sec = 0
+                    local timeout = GetGameTimer() / 1000
+                    while GetGameTimer() / 1000 - timeout < self.testDrive.time and DoesEntityExist(vehicle) and
+                        not IsEntityDead(PlayerPedId()) do
+                        sec = math.floor(self.testDrive.time - (GetGameTimer() / 1000 - timeout))
+                        if #(GetEntityCoords(PlayerPedId()) - self.testDrive.spawncoord) > self.testDrive.range then
+                            SetPedCoordsKeepVehicle(PlayerPedId(), self.testDrive.spawncoord)
+                        end
+                        if GetVehiclePedIsIn(PlayerPedId(), false) == 0 and DoesEntityExist(vehicle) then
+                            SetPedIntoVehicle(PlayerPedId(), vehicle, -1)
+                        end
+                        print(sec)
+                        Wait(1000)
+                    end
+
+                    SetPedCoordsKeepVehicle(PlayerPedId(), self.lastCoords)
+                    FreezeEntityPosition(vehicle, true)
+                    SetVehicleUndriveable(vehicle, true)
+                    ClearPedTasksImmediately(PlayerPedId())
+                    if DoesEntityExist(vehicle) then
+                        DeleteEntity(vehicle)
+                        vehicle = nil
+                    end
+                    Call.Connect("SetRouting", function(result)
+                        if result then
+                            SendNUIMessage({
+                                action = "closeShop"
+                            })
+                        end
+                    end, 0)
+                end)
+
+            end
+        end, Default.TestDrive.Routing)
+    end
 }
 
-
 requestModel = function(model)
-	if not HasModelLoaded(model) and IsModelInCdimage(model) then
-		RequestModel(model)
+    if not HasModelLoaded(model) and IsModelInCdimage(model) then
+        RequestModel(model)
 
-		while not HasModelLoaded(model) do
-			Wait(1)
-		end
-	end
+        while not HasModelLoaded(model) do
+            Wait(1)
+        end
+    end
 end
 
 checkMyJob = function(job)
@@ -283,37 +361,42 @@ RegisterNUICallback("CloseShop", function(data, cb)
     state:resetPlayerEntity()
     state:deleteLastCar()
     state.showCoordsVehicle = nil
+    state.testDrive = nil
     cb("ok")
 end)
 
 RegisterNUICallback("showVehicle", function(data, cb)
     state.vehicleUI = data
-    state:showVehicle()
-    cb("ok")
+    state:showVehicle(function(stats)
+        cb(stats)
+    end)
 end)
 
 RegisterNUICallback("setVehicleRotationRight", function(data, cb)
-	if state.vehicle and DoesEntityExist(state.vehicle) then
-        SetEntityRotation(state.vehicle, GetEntityRotation(state.vehicle) + vector3(0,0,5), false, false, 2, false)
+    if state.vehicle and DoesEntityExist(state.vehicle) then
+        SetEntityRotation(state.vehicle, GetEntityRotation(state.vehicle) + vector3(0, 0, 5), false, false, 2, false)
     end
-	cb(true)
+    cb(true)
 end)
 
 RegisterNUICallback("setVehicleRotationLeft", function(data, cb)
-	if state.vehicle and DoesEntityExist(state.vehicle) then
-        SetEntityRotation(state.vehicle, GetEntityRotation(state.vehicle) - vector3(0,0,5), false, false, 2, false)
+    if state.vehicle and DoesEntityExist(state.vehicle) then
+        SetEntityRotation(state.vehicle, GetEntityRotation(state.vehicle) - vector3(0, 0, 5), false, false, 2, false)
     end
-	cb(true)
+    cb(true)
 end)
 
 RegisterNUICallback("setVehicleColor", function(data, cb)
-	if state.vehicle and DoesEntityExist(state.vehicle) then
-		state:setVehicleColor(data)
-	end
-	cb(true)
+    if state.vehicle and DoesEntityExist(state.vehicle) then
+        state:setVehicleColor(data)
+    end
+    cb(true)
 end)
 
-
+RegisterNUICallback("testDriveVehicle", function(data, cb)
+    state:testDriveVehicle()
+    cb(true)
+end)
 
 -- End NUI Callback --
 

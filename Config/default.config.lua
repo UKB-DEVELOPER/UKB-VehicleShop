@@ -22,3 +22,20 @@ Default.ImageCarPath = 'nui://UKB-VehicleShop/interface/assets/car/'
 Default.keybind = {
     openShop = KeyLists["E"], --@comment คีย์ที่ใช้เปิดร้าน
 }
+
+Default.VehicleColors = {
+    primary = {
+        r = 255,
+        g = 255,
+        b = 255,
+    },
+    secondary = {
+        r = 255,
+        g = 0,
+        b = 0,
+    },
+}
+
+Default.TestDrive = {
+    Routing = 1, --@comment มิติที่จะให้เทสไดร์ฟ
+}

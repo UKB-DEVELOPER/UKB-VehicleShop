@@ -18,13 +18,11 @@
         <span class="title-color">Custom Color</span>
         <div class="box-primary-color">
           <span class="text-color">สีหลัก</span>
-          <input type="color" @input="setVehicleColor('primary',$event.target.value)">
-          <button class="resetColor">คืนค่าสีเดิม</button>
+          <input type="color" @input="setVehicleColor('primary',$event.target.value)" :value="defaultVehicleColor.primary">
         </div>
         <div class="box-secondary-color">
           <span class="text-color">สีรอง</span>
-          <input type="color" @input="setVehicleColor('secondary',$event.target.value)">
-          <button class="resetColor">คืนค่าสีเดิม</button>
+          <input type="color" @input="setVehicleColor('secondary',$event.target.value)" :value="defaultVehicleColor.secondary">
         </div>
       </div>
 
@@ -57,13 +55,12 @@
         <span class="title-performance">Performance</span>
         <div class="box-vehicle-performance">
 
-          <div class="box-headling">
-            <div class="text-headling">
-              <span>HEADLING</span>
-              <span>15.58</span>
+          <div class="box-handling">
+            <div class="text-handling">
+              <span>Handling</span>
             </div>
-            <div class="box-progress-headling">
-              <div id="progress-headling">
+            <div class="box-progress-handling">
+              <div id="progress-handling" :style="{width: performance.handling + '%'}">
               </div>
             </div>
           </div>
@@ -71,10 +68,9 @@
           <div class="box-acceleration">
             <div class="text-acceleration">
               <span>ACCELERATION</span>
-              <span>110 M/S</span>
             </div>
             <div class="box-progress-acceleration">
-              <div id="progress-acceleration">
+              <div id="progress-acceleration" :style="{width: performance.acceleration + '%'}">
               </div>
             </div>
           </div>
@@ -82,10 +78,9 @@
           <div class="box-braking">
             <div class="text-braking">
               <span>BRAKING</span>
-              <span>2 N</span>
             </div>
             <div class="box-progress-braking">
-              <div id="progress-braking">
+              <div id="progress-braking" :style="{width: performance.braking + '%'}">
               </div>
             </div>
           </div>
@@ -93,10 +88,9 @@
           <div class="box-speed">
             <div class="text-speed">
               <span>MAX SPEED</span>
-              <span>200 Km/Hr</span>
             </div>
             <div class="box-progress-speed">
-              <div id="progress-speed">
+              <div id="progress-speed" :style="{width: performance.speed + '%'}">
               </div>
             </div>
           </div>
@@ -104,7 +98,7 @@
       </div>
 
       <div class="box-btn">
-        <button class="btn-testDrive">ทดลองรถ</button>
+        <button class="btn-testDrive" @click="testDriveVehicle">ทดลองรถ</button>
         <button class="btn-buy">ชำระเงิน</button>
         <button class="btn-exit" @click="CloseShop">ออก</button>
         
@@ -123,7 +117,7 @@
           </select>
         </div>
         <div class="box-search">
-          <input type="text" placeholder="Search" v-model="search">
+          <input type="search" placeholder="Search" v-model="search">
         </div>
       </div>
 
@@ -188,8 +182,12 @@
       </div>
     </div>
   </div>
-
   <!-- endPayment -->
+
+  <!-- <div class="box-testDrive">
+    <span>testDrive</span>
+  </div> -->
+  
 
   </div>
 </template>
@@ -215,6 +213,17 @@ export default {
       vehiclesAll: [],
       vehicles: null,
       selectedVehicle: null,
+      defaultVehicleColor: {
+        primary: null,
+        secondary: null
+      },
+      performance: {
+        handling: 0.0,
+        acceleration: 0.0,
+        braking: 0.0,
+        speed: 0.0
+      }
+      
     }
   },
   methods: {
@@ -237,9 +246,14 @@ export default {
                       }
                     }
                     this.selectVehicle(this.vehiclesAll[0])
+                    this.defaultVehicleColor.primary = this.rbgToHex(data.defualtColor.primary)
+                    this.defaultVehicleColor.secondary = this.rbgToHex(data.defualtColor.secondary)
                   }
-                  if (data.action == 'isDead') {
+                  if (data.action == 'closeShop') {
                     this.CloseShop();
+                  }
+                  if (data.action == 'StartTestDrive') {
+                    this.StartTestDrive();
                   }
                 }
             });
@@ -289,13 +303,20 @@ export default {
         },
         async selectVehicle(data){
           this.selectedVehicle = data;
-          await fetch(`https://${GetParentResourceName()}/showVehicle`, {
+            await fetch(`https://${GetParentResourceName()}/showVehicle`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
             body: JSON.stringify(this.selectedVehicle),
+            }).then((response) => response.json()).then((stats) => {
+            this.performance.handling = parseFloat((stats.info.handling * 10));
+            this.performance.acceleration = parseFloat((stats.info.acceleration * 10));
+            this.performance.braking = parseFloat((stats.info.braking * 10));
+            this.performance.speed = parseFloat((stats.info.speed * 10));
           });
+          this.setVehicleColor('primary', this.defaultVehicleColor.primary)
+          this.setVehicleColor('secondary', this.defaultVehicleColor.secondary)
         },
         hexToRgb(hex){
           let nexHex = hex.split('#')[1];
@@ -310,6 +331,9 @@ export default {
             b: b
           }
 
+        },
+        rbgToHex(rgb) {
+          return "#" + ((1 << 24) + (rgb.r << 16) + (rgb.g << 8) + rgb.b).toString(16).slice(1);
         },
         async setVehicleColor(type ,value) {
           let color = this.hexToRgb(value);
@@ -327,7 +351,20 @@ export default {
               }
             ),
           });
-        }
+        },
+        async testDriveVehicle() {
+          await fetch(`https://${GetParentResourceName()}/testDriveVehicle`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({}),
+          });
+        },
+      StartTestDrive() {
+        this.main.ui = false;
+        this.payment.ui = false;
+      }
   },
   computed:{
     Vehicles() {

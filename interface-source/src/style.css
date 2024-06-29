@@ -285,7 +285,7 @@ padding: 0;
   padding: 20px;
 }
 
-.box-performance .box-vehicle-performance .box-headling{
+.box-performance .box-vehicle-performance .box-handling{
   width: 100%;
   height: 50px;
   display: flex;
@@ -295,14 +295,14 @@ padding: 0;
   gap: 10px;
 }
 
-.box-performance .box-vehicle-performance .box-headling .text-headling{
+.box-performance .box-vehicle-performance .box-handling .text-handling{
   width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.box-performance .box-vehicle-performance .box-headling .box-progress-headling{
+.box-performance .box-vehicle-performance .box-handling .box-progress-handling{
   width: 100%;
   height: 5px;
   background-color: white;
@@ -311,13 +311,12 @@ padding: 0;
 }
 
 
-.box-performance .box-vehicle-performance .box-headling .box-progress-headling > #progress-headling{
-  width: 70%;
+
+.box-performance .box-vehicle-performance .box-handling .box-progress-handling > #progress-handling{
   height: 100%;
   background-color: var(--primary-color);
+  transition: all 0.5s ease-in-out;
 }
-
-
 
 .box-performance .box-vehicle-performance .box-acceleration{
   width: 100%;
@@ -346,9 +345,9 @@ padding: 0;
 
 
 .box-performance .box-vehicle-performance .box-acceleration .box-progress-acceleration > #progress-acceleration{
-  width: 10%;
   height: 100%;
   background-color: var(--primary-color);
+  transition: all 0.5s ease-in-out;
 }
 
 .box-performance .box-vehicle-performance .box-braking{
@@ -378,9 +377,9 @@ padding: 0;
 
 
 .box-performance .box-vehicle-performance .box-braking .box-progress-braking > #progress-braking{
-  width: 30%;
   height: 100%;
   background-color: var(--primary-color);
+  transition: all 0.5s ease-in-out;
 }
 
 .box-performance .box-vehicle-performance .box-speed{
@@ -410,9 +409,9 @@ padding: 0;
 
 
 .box-performance .box-vehicle-performance .box-speed .box-progress-speed > #progress-speed{
-  width: 50%;
   height: 100%;
   background-color: var(--primary-color);
+  transition: all 0.5s ease-in-out;
 }
 
 
@@ -561,7 +560,7 @@ select:-moz-focusring {
   align-items: center;
 }
 
-.box-search input[type="text"]{
+.box-search input[type="search"]{
   width: 100%;
   height: 100%;
   background-color: var(--bg-color);
@@ -803,3 +802,18 @@ select:-moz-focusring {
   border-radius: 10px;
 }
 /* endPayment */
+
+/* box-testdrive */
+.box-testDrive{
+  position: absolute;
+  width: 400px;
+  height: 220px;
+  background-color: var(--bg-color);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 10px;
+  box-shadow: 2px 5px 1px var(--primary-color);
+  filter: drop-shadow(0 0 1px var(--secondary-color));
+}
+/* endtestDrive */
