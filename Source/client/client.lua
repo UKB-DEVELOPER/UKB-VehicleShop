@@ -281,7 +281,10 @@ local state = {
                         if GetVehiclePedIsIn(PlayerPedId(), false) == 0 and DoesEntityExist(vehicle) then
                             SetPedIntoVehicle(PlayerPedId(), vehicle, -1)
                         end
-                        print(sec)
+                        SendNUIMessage({
+                            action = "updateTimerTestDrive",
+                            timer = sec
+                        })
                         Wait(1000)
                     end
 

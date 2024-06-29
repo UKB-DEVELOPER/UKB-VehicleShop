@@ -1,8 +1,9 @@
 <template>
-  <div class="container" v-show="main?.ui">
+  <body>
+  <div class="container">
 
     <!-- Left -->
-    <div class="tap-left" v-if="selectedVehicle">
+    <div class="tap-left" v-if="selectedVehicle" v-show="main?.ui">
 
       <div class="box-title">
         <span class="titleShop">{{ titleShop }}</span>
@@ -108,7 +109,7 @@
     <!-- endLeft -->
 
     <!-- Right -->
-    <div class="tap-right">
+    <div class="tap-right" v-show="main?.ui">
 
       <div class="box-filter">
         <div class="box-categories">
@@ -145,7 +146,7 @@
     <!-- endRight -->
 
     <!-- Control -->
-    <div class="box-control">
+    <div class="box-control" v-show="main?.ui">
         <p>
           กด <span class="btn-control">A</span> <span class="btn-control">D</span> ค้างเพื่อหมุนยานพาหนะ <span>|</span> กด <span class="btn-control">W</span>เพื่อทดสอบเครื่องยนต์
         </p>   
@@ -155,7 +156,7 @@
 
 
     <!-- Payment -->
-    <div class="box-payment" v-show="payment?.ui">
+    <div class="box-payment" v-if="payment?.ui">
       <div class="box-payment-main">
         <i class="fa-solid fa-xmark"></i>
         <div class="box-my-money">
@@ -184,12 +185,20 @@
   </div>
   <!-- endPayment -->
 
-  <!-- <div class="box-testDrive">
-    <span>testDrive</span>
-  </div> -->
+  <div class="box-testDrive" v-if='TestDrive?.ui'>
+    <div class="main-testdrive">
+       <div class="box-timer-testdrive">
+          <span>{{ TestDrive?.timer }}</span>
+       </div>
+       <div class="box-text-testdrive">
+          <span>Test Drive</span>
+       </div>
+    </div>
+  </div>
   
 
   </div>
+</body>
 </template>
 
 <script>
@@ -222,6 +231,10 @@ export default {
         acceleration: 0.0,
         braking: 0.0,
         speed: 0.0
+      },
+      TestDrive :{
+        ui: false,
+        timer: 0
       }
       
     }
@@ -254,6 +267,9 @@ export default {
                   }
                   if (data.action == 'StartTestDrive') {
                     this.StartTestDrive();
+                  }
+                  if (data.action == 'updateTimerTestDrive') {
+                      this.TestDrive.timer = data.timer;
                   }
                 }
             });
@@ -293,6 +309,8 @@ export default {
           ]
           this.search = ''
           this.vehiclesAll = []
+          this.TestDrive.ui = false;
+          this.TestDrive.timer = 0;
           await fetch(`https://${GetParentResourceName()}/CloseShop`, {
             method: "POST",
             headers: {
@@ -364,6 +382,7 @@ export default {
       StartTestDrive() {
         this.main.ui = false;
         this.payment.ui = false;
+        this.TestDrive.ui = true;
       }
   },
   computed:{
