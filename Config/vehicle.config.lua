@@ -42,6 +42,11 @@ Vehicle.ListShop = {
         },
         coords = vector4(-80.9,-1102.13,26.17,250.31),
         showCoords = vector3(-44.79, -1096.64, 26.40),
+        spawnCoords = {
+            vector3(-31.35, -1090.93, 26.42),
+            vector3(-68.94, -1108.15, 25.97),
+
+        },
         requireJob = {
             'unemployed',
             'police'
@@ -121,6 +126,11 @@ Vehicle.ListShop = {
         },
         coords = vector4(-357.11, -2427.12,2.65,238.96),
         showCoords = vector3(-372.16, -2437.18, 1),
+        spawnCoords = {
+            vector3(-31.35, -1090.93, 26.42),
+            vector3(-68.94, -1108.15, 25.97),
+
+        },
         requireJob = {
             'police',
         },

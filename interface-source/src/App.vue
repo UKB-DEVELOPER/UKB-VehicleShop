@@ -12,7 +12,7 @@
 
       <div class="box-vehicleName">
         <span class="vehicleName">{{selectedVehicle.label}}</span>
-        <span class="vehicleType">Type : Super</span>
+        <span class="vehicleType">Type : {{selectedVehicle.type }}</span>
       </div>
 
       <div class="box-customColor">
@@ -100,7 +100,7 @@
 
       <div class="box-btn">
         <button class="btn-testDrive" @click="testDriveVehicle">ทดลองรถ</button>
-        <button class="btn-buy">ชำระเงิน</button>
+        <button class="btn-buy" @click="GetMyMoney">ชำระเงิน</button>
         <button class="btn-exit" @click="CloseShop">ออก</button>
         
       </div>
@@ -121,13 +121,15 @@
           <input type="search" placeholder="Search" v-model="search">
         </div>
       </div>
+    
 
       <div class="box-list-car">
         <div class="list-car">
-          <button class="box-car" v-for="(model,idx) in Vehicles" :key="idx" @click='selectVehicle(model)'>
+          <button class="box-car" v-for="(model,idx) in Vehicles" :key="idx" @click='selectVehicle(model)' :class="[selectedVehicle.model == model.model ? 'box-car-Active' : '']">
             <span class="car-name">{{ model.label }}</span>
             <div class="box-car-img">
-              <img :src="'/assets/car/' + model.model + '.png'" :alt="model.model">
+              <img :src="`./assets/car/${model.model}.png`" :alt="model.model" v-if="imageExists(`./assets/car/${model.model}.png`)">
+              <img :src="`./assets/car/car-unknow.png`" :alt="model.model" class="carUnknow" v-else>
             </div>
             <div class="box-car-detail">
               <span style="display: flex; justify-content:center;align-items:center; gap: 5px;">
@@ -148,7 +150,7 @@
     <!-- Control -->
     <div class="box-control" v-show="main?.ui">
         <p>
-          กด <span class="btn-control">A</span> <span class="btn-control">D</span> ค้างเพื่อหมุนยานพาหนะ <span>|</span> กด <span class="btn-control">W</span>เพื่อทดสอบเครื่องยนต์
+          กด <span class="btn-control">A</span> <span class="btn-control">D</span> ค้างเพื่อหมุนยานพาหนะ
         </p>   
     </div>
 
@@ -158,27 +160,28 @@
     <!-- Payment -->
     <div class="box-payment" v-if="payment?.ui">
       <div class="box-payment-main">
-        <i class="fa-solid fa-xmark"></i>
+        <i class="fa-solid fa-xmark" @click="payment.ui = false"></i>
         <div class="box-my-money">
-          <span>CASH : 1200000 $</span>
-          <span>BANK : 1200000 $</span>
+          <span>CASH : {{ payment?.cash }} $</span>
+          <span>BANK : {{ payment?.bank }} $</span>
         </div>
         <div class="box-vehicle-payment">
           
-          <button class="bank">
+
+          <button class="bank" @click="BuyVehicle('bank', VehiclesBankPrice)" :disabled="(payment.bank >= VehiclesBankPrice) ? false : true" :class="[(payment.bank >= VehiclesBankPrice) ? 'btn-enable' : 'btn-disable']">
             <span>
               <i class="fa-solid fa-building-columns"></i>
-              BANK (+3%)
+              BANK ( + {{ parseInt(payment.vat * 100) }} % )
             </span>
-            <span>9999999 $</span>
+            <span> {{VehiclesBankPrice}} $</span>
           </button>
 
-          <button class="cash">
+          <button class="cash" @click="BuyVehicle('cash', VehiclesCashPrice)" :disabled="(payment.cash >= VehiclesCashPrice) ? false : true" :class="[(payment.cash >= VehiclesCashPrice) ? 'btn-enable' : 'btn-disable']">
             <span>
               <i class="fa-solid fa-money-bill"></i>
               CASH
             </span>
-            <span>9999999 $</span>
+            <span>{{VehiclesCashPrice}} $</span>
           </button>
       </div>
     </div>
@@ -212,7 +215,10 @@ export default {
         ui: false
       },
       payment: {
-        ui: false
+        ui: false,
+        cash: 0,
+        bank: 0,
+        vat: 0
       },
       search: '',
       selectedCategory: null,
@@ -271,13 +277,20 @@ export default {
                   if (data.action == 'updateTimerTestDrive') {
                       this.TestDrive.timer = data.timer;
                   }
+                  if (data.action == 'BuyVehicleSuccessfully') {
+                    this.BuyVehicleSuccessfully();
+                  }
                 }
             });
         },
         KeyDown() {
             window.addEventListener('keydown', (event) => {
               if (event.key == 'Escape') {
-                    this.CloseShop();
+                    if (this.payment.ui) {
+                      this.payment.ui = false;
+                    }else{
+                      this.CloseShop();
+                    }
                 }
               if (event.key == 'a') {
                   fetch(`https://${GetParentResourceName()}/setVehicleRotationLeft`, {
@@ -311,6 +324,8 @@ export default {
           this.vehiclesAll = []
           this.TestDrive.ui = false;
           this.TestDrive.timer = 0;
+          this.payment.cash = 0;
+          this.payment.money = 0;
           await fetch(`https://${GetParentResourceName()}/CloseShop`, {
             method: "POST",
             headers: {
@@ -319,7 +334,32 @@ export default {
             body: JSON.stringify({}),
           });
         },
+        async BuyVehicleSuccessfully(){
+          this.main.ui = false;
+          this.payment.ui = false;
+          this.vehicles = null;
+          this.selectedCategory = null
+          this.categories = [
+            'All',
+          ]
+          this.search = ''
+          this.vehiclesAll = []
+          this.TestDrive.ui = false;
+          this.TestDrive.timer = 0;
+          this.payment.cash = 0;
+          this.payment.money = 0;
+          await fetch(`https://${GetParentResourceName()}/BuyVehicleSuccessfully`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({}),
+          });
+        },
         async selectVehicle(data){
+          this.payment.ui = false;
+          this.payment.cash = 0;
+          this.payment.money = 0;
           this.selectedVehicle = data;
             await fetch(`https://${GetParentResourceName()}/showVehicle`, {
             method: "POST",
@@ -332,6 +372,7 @@ export default {
             this.performance.acceleration = parseFloat((stats.info.acceleration * 10));
             this.performance.braking = parseFloat((stats.info.braking * 10));
             this.performance.speed = parseFloat((stats.info.speed * 10));
+            this.selectedVehicle.type = (stats.info.typecar == 'automobile') ? 'car' : stats.info.typecar;
           });
           this.setVehicleColor('primary', this.defaultVehicleColor.primary)
           this.setVehicleColor('secondary', this.defaultVehicleColor.secondary)
@@ -383,6 +424,41 @@ export default {
         this.main.ui = false;
         this.payment.ui = false;
         this.TestDrive.ui = true;
+      },
+      imageExists(image_url){
+        var http = new XMLHttpRequest();
+        http.open('HEAD', image_url, false);
+        http.send();
+        return http.status != 404;
+      },
+      async GetMyMoney() {
+        await fetch(`https://${GetParentResourceName()}/GetMyMoney`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({}),
+        }).then((response) => response.json()).then((res) => {
+          this.payment.ui = true
+          this.payment.cash = res.cash
+          this.payment.bank = res.bank
+          this.payment.vat = res.vat
+        });
+      },
+      async BuyVehicle(typeMoney, price) {
+        this.payment.ui = false;
+        this.payment.cash = 0;
+        this.payment.bank = 0;
+        await fetch(`https://${GetParentResourceName()}/BuyVehicle`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            typeMoney: typeMoney,
+            price: price
+          }),
+        });
       }
   },
   computed:{
@@ -403,6 +479,12 @@ export default {
             return this.vehicles[this.selectedCategory]
         }
       }
+    },
+    VehiclesCashPrice(){
+      return this.payment.ui ? this.selectedVehicle.price : 0
+    },
+    VehiclesBankPrice(){
+      return this.payment.ui ? this.selectedVehicle.price + (this.selectedVehicle.price * this.payment.vat) : 0
     }
   },
   async mounted() {

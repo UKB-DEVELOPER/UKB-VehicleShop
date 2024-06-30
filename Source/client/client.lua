@@ -28,7 +28,7 @@ regEventESX = function(name, handler)
     return RegisterNetEvent(name), AddEventHandler(name, handler)
 end
 
--- [@ RegiterCallBack of God
+-- [@ RegisterCallBack of God
 Call = {}
 Call.Called = {}
 Call.Id = 0
@@ -130,11 +130,13 @@ local state = {
     showCoordsVehicle = nil,
     testDrive = nil,
     VehicleTestDrive = nil,
+    spawnCoords = nil,
 
     SetCam = function(self, idx)
         local shop = Vehicle.ListShop[idx]
         self.showCoordsVehicle = shop.showCoords
         self.testDrive = shop.testDrive
+        self.spawnCoords = shop.spawnCoords
         local target = nil
         if not DoesCamExist(self.cam) then
             self.cam = CreateCam("DEFAULT_SCRIPTED_CAMERA", true)
@@ -166,7 +168,6 @@ local state = {
             vehicles = shop.vehicles,
             shopName = shop.shopName,
             SvName = Default.SvName,
-            ImageCarPath = Default.ImageCarPath,
             defualtColor = Default.VehicleColors
         })
         SetNuiFocus(self.ui, self.ui)
@@ -179,7 +180,6 @@ local state = {
         end
         SetEntityVisible(PlayerPedId(), 1)
         SetNuiFocus(self.ui, self.ui)
-        DisplayRadar(1)
     end,
 
     deleteLastCar = function(self)
@@ -204,7 +204,6 @@ local state = {
 
     showVehicle = function(self, cb)
         self:deleteLastCar()
-        self:deleteLastCartestDrive()
 
         local model = (type(self.vehicleUI.model) == 'number' and self.vehicleUI.model or
                           GetHashKey(self.vehicleUI.model))
@@ -248,6 +247,54 @@ local state = {
 
     end,
 
+
+    createVehicle = function(self , modelName , vehicleData ,cb)
+        if not self.spawnCoords then
+            return
+        end
+
+        local coordSpawn
+        while coordSpawn == nil do
+            Wait(0)
+            local playerCoords = GetEntityCoords(PlayerPedId())
+            Draw3DText("กำลังเช็คพื้นที่สำหรับการซื้อรถ", playerCoords, playerCoords)     
+            for _, coord in pairs(self.spawnCoords) do
+                local isSpawnPointClear = ESX.Game.IsSpawnPointClear(coord, 10.0)
+                if isSpawnPointClear then
+                    coordSpawn = coord
+                end
+            end
+        end
+
+        RequestCollisionAtCoord(
+            coordSpawn.x,
+            coordSpawn.y,
+            coordSpawn.z
+        )
+
+        local model = (type(modelName) == 'number' and modelName or
+                          GetHashKey(modelName))
+        requestModel(model)
+
+        local xVehicle = CreateVehicle(model, coordSpawn.x, coordSpawn.y, coordSpawn.z+0.5 , true, false)
+
+        ESX.Game.SetVehicleProperties(xVehicle, vehicleData)
+        SetModelAsNoLongerNeeded(model)
+        local timeout = 0
+        while not HasCollisionLoadedAroundEntity(xVehicle) and timeout < 100 do
+            Wait(0)
+            timeout = timeout + 1
+        end
+
+        if xVehicle and DoesEntityExist(xVehicle) then
+            TaskWarpPedIntoVehicle(PlayerPedId(), xVehicle, -1)
+            cb(true)
+        else
+            cb(false)
+        end
+        
+    end,
+
     setVehicleColor = function(self, data)
         if self.vehicle and DoesEntityExist(self.vehicle) then
             if data.type == 'primary' then
@@ -262,6 +309,7 @@ local state = {
         if not self.testDrive.enable then
             return
         end
+        self:deleteLastCartestDrive()
         Call.Connect("SetRouting", function(result)
             if result then
                 if not self.vehicle and not DoesEntityExist(self.vehicle) then
@@ -324,6 +372,32 @@ local state = {
 
             end
         end, Default.TestDrive.Routing)
+    end,
+
+    closeShop = function(self)
+        self:detoryCam()
+        self:resetPlayerEntity()
+        self:deleteLastCar()
+        self:deleteLastCartestDrive()
+        self.showCoordsVehicle = nil
+        self.testDrive = nil
+        self.lastCoords = nil
+        self.vehicleUI = nil
+        self.spawnCoords = nil
+    end,
+
+    buyVehicleSuccessfully = function(self)
+        self:detoryCam()
+        self:deleteLastCar()
+        self:deleteLastCartestDrive()
+        self.showCoordsVehicle = nil
+        self.testDrive = nil
+        self.lastCoords = nil
+        self.vehicleUI = nil
+        self.spawnCoords = nil
+        self.ui = false
+        SetEntityVisible(PlayerPedId(), 1)
+        SetNuiFocus(self.ui, self.ui)
     end
 }
 
@@ -373,16 +447,25 @@ Draw3DText = function(label, coords, myCoords)
     ClearDrawOrigin()
 end
 
+checkMoney = function(data)
+    for k,v in pairs(ESX.GetPlayerData().accounts) do
+        if v.name == data then
+            return v.money
+        end
+    
+    end
+end
+
 -- End Function --
 
 -- NUI Callback --
 RegisterNUICallback("CloseShop", function(data, cb)
-    state:detoryCam()
-    state:resetPlayerEntity()
-    state:deleteLastCar()
-    state:deleteLastCartestDrive()
-    state.showCoordsVehicle = nil
-    state.testDrive = nil
+    state:closeShop()
+    cb("ok")
+end)
+
+RegisterNUICallback("BuyVehicleSuccessfully", function(data, cb)
+    state:buyVehicleSuccessfully()
     cb("ok")
 end)
 
@@ -417,6 +500,46 @@ end)
 RegisterNUICallback("testDriveVehicle", function(data, cb)
     state:testDriveVehicle()
     cb(true)
+end)
+
+RegisterNUICallback('GetMyMoney', function(data, cb)
+    local cash = nil
+    local bank = nil
+    while cash == nil or bank == nil do
+        cash = checkMoney('money') or 0
+        bank = checkMoney('bank') or 0
+    end
+    cb({
+        cash = cash,
+        bank = bank,
+        vat = Default.Vat or 0
+    })
+end)
+
+RegisterNUICallback('BuyVehicle', function(data, cb)
+    local ped = PlayerPedId()
+    -- local newPlate = GeneratePlate()
+    -- SetVehicleNumberPlateText(state.vehicle, newPlate)
+    local vehicleData = ESX.Game.GetVehicleProperties(state.vehicle)
+    local modelName = state.vehicleUI.model
+    
+    Call.Connect("checkPrice", function(result)
+        if result then
+            state:createVehicle(modelName , vehicleData, function(res)
+                if res then
+                    print('Create Vehicle Successfully')
+                    SendNUIMessage({
+                        action = "BuyVehicleSuccessfully"
+                    })
+                else
+                    cb(false)
+                end
+            end)
+            cb(true)
+        else
+            cb(false)
+        end
+    end, data, vehicleData, modelName)
 end)
 
 -- End NUI Callback --
@@ -462,10 +585,7 @@ AddEventHandler("onResourceStop", function(resource)
     if resource ~= GetCurrentResourceName() then
         return
     end
-    state:detoryCam()
-    state:resetPlayerEntity()
-    state:deleteLastCar()
-    state:deleteLastCartestDrive()
+    state:closeShop()
     TriggerServerEvent(tag..'SetRouting', 0)
 
     for _, v in pairs(vehshop) do

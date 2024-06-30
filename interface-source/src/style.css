@@ -13,11 +13,8 @@
 body{
   width: 100%;
   height: 100vh;
-  /* background-image: url('https://wallpapers.com/images/hd/fivem-1rhfnu6tjj8ugxwn.jpg');
-  background-position: center;
-  background-size: cover;
-  background-repeat: no-repeat; */
   user-select: none;
+  overflow: hidden;
 }
 
 :root {
@@ -598,6 +595,11 @@ select:-moz-focusring {
   transition: all 0.3s;
 }
 
+.list-car button:focus{
+  border: none;
+  outline: none;
+}
+
 .list-car button:hover{
   transform: scale(1.02);
   filter: drop-shadow(0 0 1px var(--primary-color));
@@ -611,6 +613,11 @@ select:-moz-focusring {
   border-radius: 10px;
   padding: 20px;
   overflow: hidden;
+  /* transform: all 0.3s; */
+}
+
+.box-car-Active {
+  filter: drop-shadow(0 0 1px var(--primary-color));
 }
 
 .box-car .car-name{
@@ -641,6 +648,20 @@ select:-moz-focusring {
   object-fit: contain;
   transition: all 0.3s;
 }
+
+.box-car .box-car-img .carUnknow{
+  width: 90%;
+  height: 90%;
+  object-fit: contain;
+  transition: all 0.3s;
+  transform: scale(1.3);
+}
+
+.box-car .box-car-img .carUnknow:hover{
+  transform: scale(1.5);
+}
+
+
 
 .box-car .box-car-img img:hover{
   transform: scale(1.1);
@@ -679,11 +700,11 @@ select:-moz-focusring {
 .box-control{
   position: absolute;
   background-color: var(--bg-color);
-  bottom: -3%;
+  bottom: 0;
   left: 50%;
   transform: translate(-50%, -50%);
   border-radius: 10px;
-  padding: 15px;
+  padding: 15px 30px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -717,7 +738,7 @@ select:-moz-focusring {
 .box-payment{
   position: absolute;
   width: 400px;
-  height: 220px;
+  height: 210px;
   background-color: var(--bg-color);
   top: 50%;
   left: 50%;
@@ -725,6 +746,17 @@ select:-moz-focusring {
   border-radius: 10px;
   box-shadow: 2px 5px 1px var(--primary-color);
   filter: drop-shadow(0 0 1px var(--secondary-color));
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+  
 }
 
 .box-payment-main{
@@ -769,19 +801,12 @@ select:-moz-focusring {
 
 .box-payment-main button{
   border: none;
-  cursor: pointer;
-  background-color: var(--secondary-color);
   transition: all 0.3s;
-}
-
-.box-payment-main button:hover{
-  background-color: var(--primary-color);
-  transform: scale(1.05);
 }
 
 
 .box-payment-main .box-vehicle-payment > .bank{
-  width: 135px;
+  width: 150px;
   height: 65px;
   display: flex;
   flex-direction: column;
@@ -792,7 +817,7 @@ select:-moz-focusring {
 }
 
 .box-payment-main .box-vehicle-payment > .cash{
-  width: 135px;
+  width: 150px;
   height: 65px;
   display: flex;
   flex-direction: column;
@@ -800,6 +825,21 @@ select:-moz-focusring {
   align-items: center;
   gap: 5px;
   border-radius: 10px;
+}
+
+.btn-disable{
+  cursor: default;
+  background-color: #5c5c5c;
+}
+
+.btn-enable{
+  background-color: var(--secondary-color);
+  cursor: pointer;
+}
+
+.btn-enable:hover{
+  background-color: var(--primary-color);
+  transform: scale(1.05);
 }
 /* endPayment */
 

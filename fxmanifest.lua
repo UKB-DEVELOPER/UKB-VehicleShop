@@ -2,10 +2,12 @@ fx_version 'adamant'
 game 'gta5'
 
 description 'UKB-VehicleShop'
+auther 'UKB - DEVELOPER'
 
-version '1.10.1'
+version '1.0.0'
 
 server_scripts {
+	'@oxmysql/lib/MySQL.lua',
 	'Config/base.config.lua',
 	'Config/keys.config.lua',
 	'Config/default.config.lua',
