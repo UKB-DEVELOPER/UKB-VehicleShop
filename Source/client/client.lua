@@ -131,6 +131,7 @@ local state = {
     testDrive = nil,
     VehicleTestDrive = nil,
     spawnCoords = nil,
+    plate = nil,
 
     SetCam = function(self, idx)
         local shop = Vehicle.ListShop[idx]
@@ -257,7 +258,7 @@ local state = {
         while coordSpawn == nil do
             Wait(0)
             local playerCoords = GetEntityCoords(PlayerPedId())
-            Draw3DText("กำลังเช็คพื้นที่สำหรับการซื้อรถ", playerCoords, playerCoords)     
+            Draw3DText("~g~ กำลังเช็คพื้นที", playerCoords, playerCoords)     
             for _, coord in pairs(self.spawnCoords) do
                 local isSpawnPointClear = ESX.Game.IsSpawnPointClear(coord, 10.0)
                 if isSpawnPointClear then
@@ -398,6 +399,15 @@ local state = {
         self.ui = false
         SetEntityVisible(PlayerPedId(), 1)
         SetNuiFocus(self.ui, self.ui)
+    end,
+
+    GetPlate = function(self, callback)
+        Call.Connect("GeneratePlate", function(plate)
+            if not plate then
+                return
+            end
+            callback(plate)
+        end)
     end
 }
 
@@ -441,7 +451,7 @@ Draw3DText = function(label, coords, myCoords)
     SetTextOutline()
     SetTextEntry("STRING")
     SetTextCentre(1)
-    AddTextComponentString('~y~( ... )~s~\n[~g~NPC~s~] ' .. label)
+    AddTextComponentString('~y~( ... )~s~\n ' .. label)
     SetDrawOrigin(coords.x, coords.y, coords.z + 1.05, 0)
     DrawText(0.0, 0.0)
     ClearDrawOrigin()
@@ -518,28 +528,29 @@ end)
 
 RegisterNUICallback('BuyVehicle', function(data, cb)
     local ped = PlayerPedId()
-    -- local newPlate = GeneratePlate()
-    -- SetVehicleNumberPlateText(state.vehicle, newPlate)
     local vehicleData = ESX.Game.GetVehicleProperties(state.vehicle)
     local modelName = state.vehicleUI.model
-    
-    Call.Connect("checkPrice", function(result)
-        if result then
-            state:createVehicle(modelName , vehicleData, function(res)
-                if res then
-                    print('Create Vehicle Successfully')
-                    SendNUIMessage({
-                        action = "BuyVehicleSuccessfully"
-                    })
-                else
-                    cb(false)
-                end
-            end)
-            cb(true)
-        else
-            cb(false)
-        end
-    end, data, vehicleData, modelName)
+
+    state:GetPlate(function(plate)
+        vehicleData.plate = plate
+        Call.Connect("checkPrice", function(result)
+            if result then
+                state:createVehicle(modelName , vehicleData, function(res)
+                    if res then
+                        print('Create Vehicle Successfully')
+                        SendNUIMessage({
+                            action = "BuyVehicleSuccessfully"
+                        })
+                        cb(true)
+                    else
+                        cb(false)
+                    end
+                end)
+            else
+                cb(false)
+            end
+        end, data, vehicleData, modelName)
+    end)
 end)
 
 -- End NUI Callback --
@@ -555,7 +566,7 @@ ThreadActive = function()
             local myDistanceCoord = #(playerCoords - coords)
             if myDistanceCoord <= v.DrawText3D.distance and v.DrawText3D.enable and not state.ui then
                 sleep = 0
-                Draw3DText(v.shopName, coords, playerCoords)
+                Draw3DText('[~g~NPC~s~] '..v.shopName, coords, playerCoords)
             end
             if myDistanceCoord <= 1.5 and not state.ui then
                 sleep = 0

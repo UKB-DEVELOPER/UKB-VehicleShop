@@ -12,6 +12,8 @@ server_scripts {
 	'Config/keys.config.lua',
 	'Config/default.config.lua',
 	'Config/vehicle.config.lua',
+	'Config/Quries.config.lua',
+	'Config/function/server.function.lua',
 	'Source/server/server.lua'
 }
 

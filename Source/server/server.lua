@@ -61,7 +61,6 @@ Call.Create("checkPrice", function(source, cb, data , vehicleData)
         return
     end
 
-
     cb(true)
 
     -- ServerBuyVehicle(xPlayer, vehicleData.name, vehicleData.model, vehicleData.type, vehicleData.plate, vehicleData.props, vehicleData.netID, vehicleData.class, vehicleData.job, vehicleData.target, price, function(res)
@@ -74,6 +73,15 @@ Call.Create("checkPrice", function(source, cb, data , vehicleData)
     -- end)
 
 
+end)
+
+Call.Create('GeneratePlate', function(source, cb)
+    CheckGeneratePlate(function(plate)
+        if not plate then
+            cb(false)
+        end
+        cb(plate)
+    end)
 end)
 
 --]--
@@ -98,16 +106,36 @@ SetRouting = function(source, miti , cb)
     cb(true)
 end
 
-ServerBuyVehicle = function(xPlayer, name, model, type, plate, props, netID, class, job, target, price, cb)
-    local identifier = xPlayer.getIdentifier()
-    local result = MySQL.insert.await('INSERT INTO `owned_vehicles` (owner, plate, type, vehicle, stored) VALUES (?, ?, ?, ? ,?)', {
-        identifier, plate, type, json.encode(props), 0
-    })
+--[ @ GeneratePlate ]
+local numset = {} -- [0-9]
+local charset = {} -- [A-Z]
+for c = 48, 57  do table.insert(numset, string.char(c)) end
+for c = 65, 90  do table.insert(charset, string.char(c)) end
 
-    cb(true)
+randomNumber = function(length)
+    if not length or length <= 0 then return '' end
+    math.randomseed(os.time())
+    return randomNumber(length - 1) .. numset[math.random(1, #numset)]
+end
+
+randomString = function(length)
+    if not length or length <= 0 then return '' end
+    math.randomseed(os.time())
+    return randomString(length - 1) .. charset[math.random(1, #charset)]
+end
+
+--
 
 
-    
+CheckGeneratePlate = function(cb)
+    local plate = nil
+    while plate == nil do
+        Wait(0)
+        plate = Functions.GeneratePlate()
+    end
+
+    cb(plate)
+
 end
 
 

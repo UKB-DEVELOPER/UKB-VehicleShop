@@ -37,3 +37,6 @@ Default.TestDrive = {
 }
 
 Default.Vat = 0.07 --@comment ภาษี
+
+Default.plateLetters = 3 --@comment จำนวนตัวอักษรในทะเบียน
+Default.plateNumbers = 3 --@comment จำนวนตัวเลขในทะเบียน

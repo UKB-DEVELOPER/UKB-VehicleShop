@@ -1,9 +1,5 @@
 Vehicle = {}
 
-Vehicle.tariff = 0.3 --@comment ค่าภาษี
-Vehicle.plateLetters = 3 --@comment จำนวนตัวอักษรในทะเบียน
-Vehicle.plateNumbers = 3 --@comment จำนวนตัวเลขในทะเบียน
-
 Vehicle.ListShop = {
     {
         shopName = "Car Dealer",
@@ -44,7 +40,7 @@ Vehicle.ListShop = {
         showCoords = vector3(-44.79, -1096.64, 26.40),
         spawnCoords = {
             vector3(-31.35, -1090.93, 26.42),
-            vector3(-68.94, -1108.15, 25.97),
+            -- vector3(-68.94, -1108.15, 25.97),
 
         },
         requireJob = {
