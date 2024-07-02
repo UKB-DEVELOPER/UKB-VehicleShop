@@ -53,36 +53,9 @@ Vehicle.ListShop = {
             spawncoord = vector3(-966.5, -3355.7, 13.9),
             range = 1200
         },
-        vehicles = {
-            ['Sports'] = {
-                {
-                    model = 't20', --@comment ชื่อโมเดลรถ
-                    label = 't20', --@comment ชื่อรถที่จะโชว์
-                    price = 400000, --@comment ราคาขาย
-                    stock = 10, --@comment จำนวนรถที่มีในสต๊อก ถ้าเป็น -1 จะเป็นไม่จำกัด
-
-                },
-                {
-                    model = 'sultan2', --@comment ชื่อโมเดลรถ
-                    label = 'sultan2', --@comment ชื่อรถที่จะโชว์
-                    price = 330000, --@comment ราคาขาย
-                    stock = -1, --@comment จำนวนรถที่มีในสต๊อก ถ้าเป็น -1 จะเป็นไม่จำกัด
-                },
-            },
-            ['SUV'] = {
-                {
-                    model = 'bmx', --@comment ชื่อโมเดลรถ
-                    label = 'bmx', --@comment ชื่อรถที่จะโชว์
-                    price = 400000, --@comment ราคาขาย
-                    stock = 10, --@comment จำนวนรถที่มีในสต๊อก ถ้าเป็น -1 จะเป็นไม่จำกัด
-                },
-                {
-                    model = 'huntley', --@comment ชื่อโมเดลรถ
-                    label = 'Huntley', --@comment ชื่อรถที่จะโชว์
-                    price = 330000, --@comment ราคาขาย
-                    stock = -1, --@comment จำนวนรถที่มีในสต๊อก ถ้าเป็น -1 จะเป็นไม่จำกัด
-                },
-            },
+        Categories = {
+            ['Sports'] = true,
+            ['SUV'] = true
         }
     },
     {
@@ -136,15 +109,8 @@ Vehicle.ListShop = {
             spawncoord = vector3(-372.16, -2437.18, 1),
             range = 1200
         },
-        vehicles = {
-            ['Boat'] = {
-                {
-                    model = 'suntrap', --@comment ชื่อโมเดลรถ
-                    label = 'suntrap', --@comment ชื่อรถที่จะโชว์
-                    price = 400000, --@comment ราคาขาย
-                    stock = 10, --@comment จำนวนรถที่มีในสต๊อก ถ้าเป็น -1 จะเป็นไม่จำกัด
-                }
-            },
+        Categories = {
+            ['Boat'] = true
         }
     },
 }

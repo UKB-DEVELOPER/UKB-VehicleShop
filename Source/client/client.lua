@@ -248,8 +248,7 @@ local state = {
 
     end,
 
-
-    createVehicle = function(self , modelName , vehicleData ,cb)
+    createVehicle = function(self, modelName, vehicleData, cb)
         if not self.spawnCoords then
             return
         end
@@ -258,7 +257,7 @@ local state = {
         while coordSpawn == nil do
             Wait(0)
             local playerCoords = GetEntityCoords(PlayerPedId())
-            Draw3DText("~g~ กำลังเช็คพื้นที", playerCoords, playerCoords)     
+            Draw3DText("~g~ กำลังเช็คพื้นที", playerCoords, playerCoords)
             for _, coord in pairs(self.spawnCoords) do
                 local isSpawnPointClear = ESX.Game.IsSpawnPointClear(coord, 10.0)
                 if isSpawnPointClear then
@@ -267,17 +266,12 @@ local state = {
             end
         end
 
-        RequestCollisionAtCoord(
-            coordSpawn.x,
-            coordSpawn.y,
-            coordSpawn.z
-        )
+        RequestCollisionAtCoord(coordSpawn.x, coordSpawn.y, coordSpawn.z)
 
-        local model = (type(modelName) == 'number' and modelName or
-                          GetHashKey(modelName))
+        local model = (type(modelName) == 'number' and modelName or GetHashKey(modelName))
         requestModel(model)
 
-        local xVehicle = CreateVehicle(model, coordSpawn.x, coordSpawn.y, coordSpawn.z+0.5 , true, false)
+        local xVehicle = CreateVehicle(model, coordSpawn.x, coordSpawn.y, coordSpawn.z + 0.5, true, false)
 
         ESX.Game.SetVehicleProperties(xVehicle, vehicleData)
         SetModelAsNoLongerNeeded(model)
@@ -293,7 +287,7 @@ local state = {
         else
             cb(false)
         end
-        
+
     end,
 
     setVehicleColor = function(self, data)
@@ -338,8 +332,8 @@ local state = {
                     if not self.testDrive.time then
                         return
                     end
-                    while GetGameTimer() / 1000 - timeout < self.testDrive.time and DoesEntityExist(self.VehicleTestDrive) and
-                        not IsEntityDead(PlayerPedId()) do
+                    while GetGameTimer() / 1000 - timeout < self.testDrive.time and
+                        DoesEntityExist(self.VehicleTestDrive) and not IsEntityDead(PlayerPedId()) do
                         sec = math.floor(self.testDrive.time - (GetGameTimer() / 1000 - timeout))
                         if #(GetEntityCoords(PlayerPedId()) - self.testDrive.spawncoord) > self.testDrive.range then
                             SetPedCoordsKeepVehicle(PlayerPedId(), self.testDrive.spawncoord)
@@ -458,11 +452,11 @@ Draw3DText = function(label, coords, myCoords)
 end
 
 checkMoney = function(data)
-    for k,v in pairs(ESX.GetPlayerData().accounts) do
+    for k, v in pairs(ESX.GetPlayerData().accounts) do
         if v.name == data then
             return v.money
         end
-    
+
     end
 end
 
@@ -535,7 +529,7 @@ RegisterNUICallback('BuyVehicle', function(data, cb)
         vehicleData.plate = plate
         Call.Connect("checkPrice", function(result)
             if result then
-                state:createVehicle(modelName , vehicleData, function(res)
+                state:createVehicle(modelName, vehicleData, function(res)
                     if res then
                         print('Create Vehicle Successfully')
                         SendNUIMessage({
@@ -566,7 +560,7 @@ ThreadActive = function()
             local myDistanceCoord = #(playerCoords - coords)
             if myDistanceCoord <= v.DrawText3D.distance and v.DrawText3D.enable and not state.ui then
                 sleep = 0
-                Draw3DText('[~g~NPC~s~] '..v.shopName, coords, playerCoords)
+                Draw3DText('[~g~NPC~s~] ' .. v.shopName, coords, playerCoords)
             end
             if myDistanceCoord <= 1.5 and not state.ui then
                 sleep = 0
@@ -588,6 +582,19 @@ CreateThread(function()
     while NetworkIsPlayerActive(PlayerId()) ~= 1 do
         Wait(0)
     end
+    Call.Connect("getDataVehicles", function(data)
+        local clone = data
+        for _, v in pairs(clone) do
+            for __, vehicle in pairs(Vehicle.ListShop) do
+                if not vehicle.vehicles then
+                    vehicle.vehicles = {}
+                end
+                if vehicle.Categories[v.category] then
+                    table.insert(vehicle.vehicles, v)
+                end
+            end
+        end
+    end)
     Wait(500)
     CreateThread(ThreadActive)
 end)
@@ -597,7 +604,7 @@ AddEventHandler("onResourceStop", function(resource)
         return
     end
     state:closeShop()
-    TriggerServerEvent(tag..'SetRouting', 0)
+    TriggerServerEvent(tag .. 'SetRouting', 0)
 
     for _, v in pairs(vehshop) do
         if DoesEntityExist(vehshop.npc) then

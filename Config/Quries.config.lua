@@ -19,10 +19,10 @@ Quries.isPlateAvailable = function(plate)
 end
 
 
-Quris.BuyVehicleSuccessfully = function(xPlayer, model, plate, props, type, job, cb)
-    local identifier = xPlayer.getIdentifier()
-    local result = MySQL.insert.await('INSERT INTO `owned_vehicles` (owner, plate, type, vehicle, stored) VALUES (?, ?, ?, ? ,?)', {
-        identifier, plate, type, json.encode(props), 0
-    })
+-- Quris.BuyVehicleSuccessfully = function(xPlayer, model, plate, props, type, job, cb)
+--     local identifier = xPlayer.getIdentifier()
+--     local result = MySQL.insert.await('INSERT INTO `owned_vehicles` (owner, plate, type, vehicle, stored) VALUES (?, ?, ?, ? ,?)', {
+--         identifier, plate, type, json.encode(props), 0
+--     })
     
-end
+-- end

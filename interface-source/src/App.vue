@@ -225,7 +225,6 @@ export default {
       categories: [
         'All',
       ],
-      vehiclesAll: [],
       vehicles: null,
       selectedVehicle: null,
       defaultVehicleColor: {
@@ -256,15 +255,10 @@ export default {
                     this.titleDetailShop = data.shopName;
                     this.selectedCategory = 'All';
                     this.vehicles = data.vehicles;
-                    for (const [key, value] of Object.entries(data.vehicles)) {
-                      this.categories.push(key)
-                    }
-                    for (const [key, value] of Object.entries(data.vehicles)) {
-                      for (const [key2, value2] of Object.entries(value)) {
-                        this.vehiclesAll.push(value2)
-                      }
-                    }
-                    this.selectVehicle(this.vehiclesAll[0])
+                    data.vehicles.map((vehicle) => {
+                      this.categories.includes(vehicle.category) ? '' : this.categories.push(vehicle.category)
+                    })
+                    this.selectVehicle(this.vehicles[0])
                     this.defaultVehicleColor.primary = this.rbgToHex(data.defualtColor.primary)
                     this.defaultVehicleColor.secondary = this.rbgToHex(data.defualtColor.secondary)
                   }
@@ -464,20 +458,21 @@ export default {
   computed:{
     Vehicles() {
       if (this.main.ui) {
-        if (this.selectedCategory == 'All' && this.search != '') {
-          return this.vehiclesAll.filter((vehicle) => {
-          return vehicle.label.toLowerCase().includes(this.search.toLowerCase())
-          })
-        } else if (this.selectedCategory != 'All' && this.search != '') {
-            return this.vehicles[this.selectedCategory].filter((vehicle) => {
-            return vehicle.label.toLowerCase().includes(this.search.toLowerCase())
-          })
-        }
-        else if (this.selectedCategory == 'All'){
-           return this.vehiclesAll
-        }else if (this.selectedCategory != 'All') {
-            return this.vehicles[this.selectedCategory]
-        }
+          if (this.selectedCategory == 'All' && this.search == '') {
+            return this.vehicles
+          } else if (this.selectedCategory != 'All' && this.search == '') {
+            return this.vehicles.filter((vehicle) => {
+              return vehicle.category == this.selectedCategory
+            })
+          } else if (this.selectedCategory == 'All' && this.search != '') {
+            return this.vehicles.filter((vehicle) => {
+              return vehicle.label.toLowerCase().includes(this.search.toLowerCase())
+            })
+          } else if (this.selectedCategory != 'All' && this.search != '') {
+            return this.vehicles.filter((vehicle) => {
+              return vehicle.label.toLowerCase().includes(this.search.toLowerCase()) && vehicle.category == this.selectedCategory
+            })
+          }
       }
     },
     VehiclesCashPrice(){

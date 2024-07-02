@@ -124,9 +124,6 @@ randomString = function(length)
     return randomString(length - 1) .. charset[math.random(1, #charset)]
 end
 
---
-
-
 CheckGeneratePlate = function(cb)
     local plate = nil
     while plate == nil do
@@ -138,7 +135,17 @@ CheckGeneratePlate = function(cb)
 
 end
 
+--
 
+
+Call.Create('getDataVehicles', function(source, cb, data)
+    local result = MySQL.query.await('SELECT * From `ukb_vehicles`', {})
+    if result then
+        cb(result)
+    else
+        cb(false)
+    end
+end)
 
 
 -- ]
