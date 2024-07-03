@@ -21,7 +21,6 @@ client_scripts {
 	'Config/base.config.lua',
 	'Config/keys.config.lua',
 	'Config/default.config.lua',
-	'Config/setting.config.lua',
 	'Config/vehicle.config.lua',
 	'Source/client/classes.lua',
 	'Source/client/client.lua'

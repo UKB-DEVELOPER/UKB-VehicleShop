@@ -8,6 +8,8 @@ Default.event = {
     onDeath = 'esx:onPlayerDeath',
 }
 
+Default.fontName = "font4thai"
+
 --@comment Default.logger : boolean
 --@comment ใช้เพื่อเปิด print การทำงานต่างๆ
 Default.logger = false

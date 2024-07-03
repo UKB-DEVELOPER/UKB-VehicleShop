@@ -48,29 +48,68 @@ Call.Create("SetRouting", function(source, cb , miti)
     end)
 end)
 
-Call.Create("checkPrice", function(source, cb, data , vehicleData)
+Call.Create("checkPrice", function(source, cb, shopId , data , modelName , vehicleData)
     local _source = source
     local xPlayer = ESX.GetPlayerFromId(_source)
     local typeMoney = data.typeMoney == 'cash' and 'money' or data.typeMoney
-    local price = data.price
-    local job = xPlayer.getJob().name == 'unemployed' and '' or xPlayer.getJob().name
-
-    print("Price: " .. price)
-
-    if xPlayer.getAccount(typeMoney).money < price then
-        return
+    local priceUI = data.price
+    local typeVehicle = Vehicle.ListShop[shopId].typeVehicle
+    local job = nil
+    while job == nil do
+        for i=1, #Vehicle.ListShop[shopId].requireJob do
+            if xPlayer.job.name == Vehicle.ListShop[shopId].requireJob[i] then
+                if Vehicle.ListShop[shopId].requireJob[i] == 'unemployed' then
+                    job = ''
+                    break
+                else
+                    job = xPlayer.job.name
+                end
+                -- job = xPlayer.job.name == 'unemployed' and '' or xPlayer.job.name
+            end
+        end
+        Wait(0)
     end
-
-
-    Quries.BuyVehicleSuccessfully(xPlayer, vehicleData.plate, vehicleData, 'car', job, function(res)
-        if res then
-            xPlayer.removeAccountMoney(typeMoney, price)
-            cb(true)
-        else
-            cb(false)
+    getPriceVehicle(modelName, function(result)
+        local price
+        if not result then cb(false) return end
+        if typeMoney == 'bank' then
+            price = result[1].price + (result[1].price * Default.Vat)
+            if tonumber(priceUI) ~= tonumber(price) then
+                print('Hack Bro')
+                cb(false)
+                return
+            end
+            if xPlayer.getAccount(typeMoney).money < price then
+                print('Hack Bro')
+                cb(false)
+                return
+            end
+        elseif typeMoney == 'money' then
+            price = result[1].price
+            if tonumber(priceUI) ~= tonumber(price) then
+                print('Hack Bro')
+                cb(false)
+                return
+            end
+            if xPlayer.getAccount(typeMoney).money < price then
+                print('Hack Bro')
+                cb(false)
+                return
+            end
+        end
+        if price ~= nil then
+            Quries.BuyVehicleSuccessfully(xPlayer, vehicleData.plate, vehicleData, typeVehicle, job, function(res)
+                if res then
+                    xPlayer.removeAccountMoney(typeMoney, price)
+                    cb(true)
+                else
+                    print('Hack Bro')
+                    return
+                    cb(false)
+                end
+            end)
         end
     end)
-
 end)
 
 Call.Create('GeneratePlate', function(source, cb)
@@ -82,19 +121,16 @@ Call.Create('GeneratePlate', function(source, cb)
     end)
 end)
 
---]--
-
--- [@ Command
-RegisterCommand('setmiti', function(source, args)
-    local _source = source
-    local miti = tonumber(args[1])
-    SetRouting(_source, miti , function(res)
-        if res then
-            print("Set Routing Success")
-        end
-    end)
+Call.Create('getDataVehicles', function(source, cb, data)
+    local result = MySQL.query.await('SELECT * From `ukb_vehicles`', {})
+    if result then
+        cb(result)
+    else
+        cb(false)
+    end
 end)
--- ]
+
+--]--
 
 --[@ Function
 
@@ -135,17 +171,19 @@ end
 
 --
 
-
-Call.Create('getDataVehicles', function(source, cb, data)
-    local result = MySQL.query.await('SELECT * From `ukb_vehicles`', {})
+getPriceVehicle = function(modelName,cb)
+    local result = MySQL.query.await('SELECT price From `ukb_vehicles` Where model = ? LIMIT 1', {
+        modelName
+    })
     if result then
         cb(result)
     else
         cb(false)
     end
-end)
+end
 
 
--- ]
+
+-- ] --
 
 

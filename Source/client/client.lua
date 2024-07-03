@@ -132,12 +132,15 @@ local state = {
     VehicleTestDrive = nil,
     spawnCoords = nil,
     plate = nil,
+    shopIdx = nil,
+    
 
     SetCam = function(self, idx)
         local shop = Vehicle.ListShop[idx]
         self.showCoordsVehicle = shop.showCoords
         self.testDrive = shop.testDrive
         self.spawnCoords = shop.spawnCoords
+        self.shopIdx = idx
         local target = nil
         if not DoesCamExist(self.cam) then
             self.cam = CreateCam("DEFAULT_SCRIPTED_CAMERA", true)
@@ -428,8 +431,8 @@ checkMyJob = function(job)
 end
 
 Draw3DText = function(label, coords, myCoords)
-    RegisterFontFile(Setting.fontName)
-    local fontId = RegisterFontId(Setting.fontName) or 1
+    RegisterFontFile(Default.fontName)
+    local fontId = RegisterFontId(Default.fontName) or 1
     local px, py, pz = table.unpack(GetGameplayCamCoord())
     local dist = GetDistanceBetweenCoords(px, py, pz, coords.x, coords.y, coords.z, 1)
     local scale = (1 / dist) * 20
@@ -542,7 +545,7 @@ RegisterNUICallback('BuyVehicle', function(data, cb)
             else
                 cb(false)
             end
-        end, data, vehicleData, modelName)
+        end, state.shopIdx, data, modelName ,vehicleData)
     end)
 end)
 
