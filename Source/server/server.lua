@@ -53,25 +53,23 @@ Call.Create("checkPrice", function(source, cb, data , vehicleData)
     local xPlayer = ESX.GetPlayerFromId(_source)
     local typeMoney = data.typeMoney == 'cash' and 'money' or data.typeMoney
     local price = data.price
+    local job = xPlayer.getJob().name == 'unemployed' and '' or xPlayer.getJob().name
 
     print("Price: " .. price)
 
     if xPlayer.getAccount(typeMoney).money < price then
-        cb(false)
         return
     end
 
-    cb(true)
 
-    -- ServerBuyVehicle(xPlayer, vehicleData.name, vehicleData.model, vehicleData.type, vehicleData.plate, vehicleData.props, vehicleData.netID, vehicleData.class, vehicleData.job, vehicleData.target, price, function(res)
-    --     if res then
-    --         xPlayer.removeAccountMoney(typeMoney, price)
-    --         cb(true)
-    --     else
-    --         cb(false)
-    --     end
-    -- end)
-
+    Quries.BuyVehicleSuccessfully(xPlayer, vehicleData.plate, vehicleData, 'car', job, function(res)
+        if res then
+            xPlayer.removeAccountMoney(typeMoney, price)
+            cb(true)
+        else
+            cb(false)
+        end
+    end)
 
 end)
 

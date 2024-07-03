@@ -27,8 +27,8 @@ client_scripts {
 	'Source/client/client.lua'
 }
 
--- ui_page 'interface/index.html'
-ui_page 'http://localhost:5173/'
+ui_page 'interface/index.html'
+-- ui_page 'http://localhost:5173/'
 
 files {
 	'interface/index.html',

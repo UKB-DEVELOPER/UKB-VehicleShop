@@ -521,7 +521,6 @@ RegisterNUICallback('GetMyMoney', function(data, cb)
 end)
 
 RegisterNUICallback('BuyVehicle', function(data, cb)
-    local ped = PlayerPedId()
     local vehicleData = ESX.Game.GetVehicleProperties(state.vehicle)
     local modelName = state.vehicleUI.model
 
@@ -583,8 +582,7 @@ CreateThread(function()
         Wait(0)
     end
     Call.Connect("getDataVehicles", function(data)
-        local clone = data
-        for _, v in pairs(clone) do
+        for _, v in pairs(data) do
             for __, vehicle in pairs(Vehicle.ListShop) do
                 if not vehicle.vehicles then
                     vehicle.vehicles = {}

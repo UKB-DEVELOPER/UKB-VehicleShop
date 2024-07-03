@@ -1,4 +1,4 @@
-Quries =  {}
+Quries = {}
 
 Quries.isPlateAvailable = function(plate)
     local isPass
@@ -18,11 +18,15 @@ Quries.isPlateAvailable = function(plate)
 
 end
 
+Quries.BuyVehicleSuccessfully = function(xPlayer, plate, props, type, job, cb)
+    local identifier = xPlayer.getIdentifier()
+    local result = MySQL.insert.await('INSERT INTO `owned_vehicles` (owner, plate, vehicle, type, job, stored) VALUES (?, ?, ?, ? ,?, ?)',{
+        identifier, plate, json.encode(props), type, job, 0
+    })
+    if result then
+        cb(true)
+    else
+        cb(false)
+    end
 
--- Quris.BuyVehicleSuccessfully = function(xPlayer, model, plate, props, type, job, cb)
---     local identifier = xPlayer.getIdentifier()
---     local result = MySQL.insert.await('INSERT INTO `owned_vehicles` (owner, plate, type, vehicle, stored) VALUES (?, ?, ?, ? ,?)', {
---         identifier, plate, type, json.encode(props), 0
---     })
-    
--- end
+end

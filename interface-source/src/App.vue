@@ -12,7 +12,7 @@
 
       <div class="box-vehicleName">
         <span class="vehicleName">{{selectedVehicle.label}}</span>
-        <span class="vehicleType">Type : {{selectedVehicle.type }}</span>
+        <span class="vehicleType">Type : {{selectedVehicle.category }}</span>
       </div>
 
       <div class="box-customColor">
@@ -366,7 +366,6 @@ export default {
             this.performance.acceleration = parseFloat((stats.info.acceleration * 10));
             this.performance.braking = parseFloat((stats.info.braking * 10));
             this.performance.speed = parseFloat((stats.info.speed * 10));
-            this.selectedVehicle.type = (stats.info.typecar == 'automobile') ? 'car' : stats.info.typecar;
           });
           this.setVehicleColor('primary', this.defaultVehicleColor.primary)
           this.setVehicleColor('secondary', this.defaultVehicleColor.secondary)

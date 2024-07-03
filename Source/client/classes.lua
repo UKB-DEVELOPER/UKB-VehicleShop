@@ -95,7 +95,6 @@ function calculateStats(vehicle)
   info['handling'] = score.handling
   info['speed'] = score.speed
   info['braking'] = score.braking
-  info['typecar'] = GetVehicleType(vehicle)
   statsCache[model] = {info = info}
   return statsCache[model]
 end
