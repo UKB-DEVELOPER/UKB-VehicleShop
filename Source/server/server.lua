@@ -69,7 +69,7 @@ Call.Create("checkPrice", function(source, cb, shopId , data , modelName , vehic
         end
         Wait(0)
     end
-    getPriceVehicle(modelName, function(result)
+    getDetailVehicle(modelName, function(result)
         local price
         if not result then cb(false) return end
         if typeMoney == 'bank' then
@@ -171,8 +171,8 @@ end
 
 --
 
-getPriceVehicle = function(modelName,cb)
-    local result = MySQL.query.await('SELECT price From `ukb_vehicles` Where model = ? LIMIT 1', {
+getDetailVehicle = function(modelName,cb)
+    local result = MySQL.query.await('SELECT `price`, `stock`, `job`, `grade` From `ukb_vehicles` Where model = ?', {
         modelName
     })
     if result then
