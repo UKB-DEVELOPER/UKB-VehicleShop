@@ -31,7 +31,7 @@ regEvent("SetRouting", function(miti)
     local _source = source
     SetRouting(_source, miti , function(res)
         if res then
-            print('^2 UKB-VehicleShop: ReloadScript Success')
+            return
         end
     end)
 end)
@@ -57,14 +57,11 @@ Call.Create("checkPrice", function(source, cb, shopId , data , modelName , vehic
     local job = nil
     while job == nil do
         for i=1, #Vehicle.ListShop[shopId].requireJob do
-            if xPlayer.job.name == Vehicle.ListShop[shopId].requireJob[i] then
-                if Vehicle.ListShop[shopId].requireJob[i] == 'unemployed' then
-                    job = ''
-                    break
-                else
-                    job = xPlayer.job.name
-                end
-                -- job = xPlayer.job.name == 'unemployed' and '' or xPlayer.job.name
+            if Vehicle.ListShop[shopId].requireJob[i] == 'unemployed' then
+                job = ''
+                break
+            elseif xPlayer.job.name == Vehicle.ListShop[shopId].requireJob[i] then
+                job = xPlayer.job.name
             end
         end
         Wait(0)
@@ -75,24 +72,20 @@ Call.Create("checkPrice", function(source, cb, shopId , data , modelName , vehic
         if typeMoney == 'bank' then
             price = result[1].price + (result[1].price * Default.Vat)
             if tonumber(priceUI) ~= tonumber(price) then
-                print('Hack Bro')
                 cb(false)
                 return
             end
             if xPlayer.getAccount(typeMoney).money < price then
-                print('Hack Bro')
                 cb(false)
                 return
             end
         elseif typeMoney == 'money' then
             price = result[1].price
             if tonumber(priceUI) ~= tonumber(price) then
-                print('Hack Bro')
                 cb(false)
                 return
             end
             if xPlayer.getAccount(typeMoney).money < price then
-                print('Hack Bro')
                 cb(false)
                 return
             end
@@ -103,7 +96,6 @@ Call.Create("checkPrice", function(source, cb, shopId , data , modelName , vehic
                     xPlayer.removeAccountMoney(typeMoney, price)
                     cb(true)
                 else
-                    print('Hack Bro')
                     return
                     cb(false)
                 end
